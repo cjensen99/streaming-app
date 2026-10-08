@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // This package is CommonJS JavaScript (Expo loads app configs' imports with plain Node
+    // `require`, which can't load .ts from another package). JSDoc types are checked here.
+    "allowJs": true,
+    "checkJs": true,
+    "types": ["node"]
+  },
+  "include": ["**/*.js", "**/*.json"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@app/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Build-time configuration shared by the apps: Expo config, config plugins, Metro. Node only; never bundled into an app.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "expo": "~57.0.27"
+  },
+  "devDependencies": {
+    "@types/node": "~22.20.5"
+  }
+}

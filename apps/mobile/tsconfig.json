@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Mirror Metro: `Foo.mobile.tsx` wins over `Foo.tsx` in the phone app.
+    "moduleSuffixes": [".mobile", ""]
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

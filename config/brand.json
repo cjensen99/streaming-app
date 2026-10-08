@@ -1,0 +1,8 @@
+{
+  "name": "StreamShelf",
+  "bundleIdBase": "com.cjensen99.streamshelf",
+  "colors": {
+    "background": "#0B0B0F",
+    "iconBackground": "#E6F4FE"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+.expo/
+dist/
+apps/*/android/
+apps/*/ios/
+package-lock.json
+*.md
+!README.md
