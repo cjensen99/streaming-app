@@ -88,6 +88,19 @@ const RESTRICTIONS = [
     ],
   },
   {
+    allowedIn: ['utils'],
+    patterns: [
+      {
+        regex: pkgRegex('@react-native-async-storage/async-storage'),
+        message: 'AsyncStorage is wrapped by shared/utils/storage.ts. Import that instead.',
+      },
+      {
+        regex: pkgRegex('@react-native-community/netinfo'),
+        message: 'NetInfo is wrapped by shared/utils/network.ts. Import that instead.',
+      },
+    ],
+  },
+  {
     forbiddenIn: ['api', 'types'],
     patterns: [
       {

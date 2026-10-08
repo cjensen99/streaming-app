@@ -79,9 +79,20 @@ Run these from the repository root.
 | `npm run lint:fix`     | Runs ESLint with autofix                              |
 | `npm run format`       | Formats the repo with Prettier                        |
 | `npm run format:check` | Checks formatting without writing (for CI)            |
-| `npm test`             | Runs the tests in every workspace                     |
+| `npm test`             | Runs the tests in every workspace (see Testing)       |
 | `npm run mobile`       | Starts Metro for an installed phone dev build         |
 | `npm run tv`           | Starts Metro for an installed TV dev build            |
+
+## Testing
+
+- **`shared/`** uses Jest (`jest-expo`) with React Native Testing Library. Tests live in
+  `shared/__tests__/`. Every test runs twice, as two Jest projects: **tv** resolves files like
+  the TV app (TV-first defaults) and **mobile** like the phone app (`Foo.mobile.tsx` first), so a
+  phone-only override can't go untested. Run one project with
+  `npm test -w shared -- --selectProjects mobile`.
+- **`config/`** (Node build-time code) uses Node's built-in test runner. The UIScene plugin is
+  tested against copies of Expo's real SDK 57 and SDK 58 native templates
+  (`config/__tests__/fixtures/`).
 
 ## Repository layout
 
@@ -122,6 +133,7 @@ ESLint enforces these rules (`eslint.config.js`):
 | `TVEventHandler`, `useTVEventHandler`, `BackHandler`, `TVEventControl` (from RN) | `shared/input/`                                       |
 | `zustand`                                                                        | `shared/state/`                                       |
 | `@tanstack/react-query`                                                          | `shared/api/`, `shared/hooks/`                        |
+| `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`   | `shared/utils/` (wrapped by `storage`, `network`)     |
 | `react-native` (any import)                                                      | anywhere **except** `shared/api/` and `shared/types/` |
 | Raw hex colours                                                                  | `shared/ui/`                                          |
 

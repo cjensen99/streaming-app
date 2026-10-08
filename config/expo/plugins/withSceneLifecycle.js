@@ -40,6 +40,19 @@ class SceneDelegate: ExpoAppSceneDelegate {
 }
 `;
 
+// Info.plist entry declaring one window scene handled by `SceneDelegate` (as in SDK 58).
+const SCENE_MANIFEST = {
+  UIApplicationSupportsMultipleScenes: false,
+  UISceneConfigurations: {
+    UIWindowSceneSessionRoleApplication: [
+      {
+        UISceneConfigurationName: 'Default Configuration',
+        UISceneDelegateClassName: '$(PRODUCT_MODULE_NAME).SceneDelegate',
+      },
+    ],
+  },
+};
+
 // SDK 57 template: the window is created and React Native started in didFinishLaunching.
 // Under UIScene, ExpoAppSceneDelegate does both once the scene connects.
 const APP_DELEGATE_CLASS = 'class AppDelegate: ExpoAppDelegate {';
@@ -53,17 +66,7 @@ const APP_DELEGATE_WINDOW_REPLACEMENT =
 /** @type {import('expo/config-plugins').ConfigPlugin} */
 const withSceneManifest = (config) =>
   withInfoPlist(config, (cfg) => {
-    cfg.modResults.UIApplicationSceneManifest = {
-      UIApplicationSupportsMultipleScenes: false,
-      UISceneConfigurations: {
-        UIWindowSceneSessionRoleApplication: [
-          {
-            UISceneConfigurationName: 'Default Configuration',
-            UISceneDelegateClassName: '$(PRODUCT_MODULE_NAME).SceneDelegate',
-          },
-        ],
-      },
-    };
+    cfg.modResults.UIApplicationSceneManifest = structuredClone(SCENE_MANIFEST);
     return cfg;
   });
 
@@ -86,28 +89,36 @@ const withSceneDelegateFile = (config) =>
     return cfg;
   });
 
+/**
+ * The AppDelegate.swift edit, as a pure function so it can be unit-tested against the real
+ * templates. Returns the source unchanged if it already adopts UIScene (plugin already applied,
+ * or an SDK 58+ template); throws if it doesn't look like the SDK 57 template.
+ *
+ * @param {string} src AppDelegate.swift contents.
+ * @returns {string}
+ */
+function addSceneSupportToAppDelegate(src) {
+  if (src.includes('ExpoReactNativeFactoryProvider')) return src;
+
+  // Fail loudly if the template changed, rather than generating an app that crashes at launch.
+  if (!src.includes(APP_DELEGATE_CLASS) || !APP_DELEGATE_WINDOW_BLOCK.test(src)) {
+    throw new Error(
+      `${PLUGIN}: AppDelegate.swift doesn't match the Expo SDK 57 template. ` +
+        'If you upgraded to Expo SDK 58+, remove this plugin; otherwise update it.',
+    );
+  }
+  return src
+    .replace(APP_DELEGATE_CLASS, APP_DELEGATE_CLASS_WITH_PROVIDER)
+    .replace(APP_DELEGATE_WINDOW_BLOCK, APP_DELEGATE_WINDOW_REPLACEMENT);
+}
+
 /** @type {import('expo/config-plugins').ConfigPlugin} */
 const withAppDelegateSceneSupport = (config) =>
   withAppDelegate(config, (cfg) => {
     if (cfg.modResults.language !== 'swift') {
       throw new Error(`${PLUGIN}: expected a Swift AppDelegate, got ${cfg.modResults.language}.`);
     }
-    let src = cfg.modResults.contents;
-
-    // Already applied (e.g. `expo prebuild` without --clean) or the template already adopts it.
-    if (src.includes('ExpoReactNativeFactoryProvider')) return cfg;
-
-    // Fail loudly if the template changed, rather than generating an app that crashes at launch.
-    if (!src.includes(APP_DELEGATE_CLASS) || !APP_DELEGATE_WINDOW_BLOCK.test(src)) {
-      throw new Error(
-        `${PLUGIN}: AppDelegate.swift doesn't match the Expo SDK 57 template. ` +
-          'If you upgraded to Expo SDK 58+, remove this plugin; otherwise update it.',
-      );
-    }
-    src = src.replace(APP_DELEGATE_CLASS, APP_DELEGATE_CLASS_WITH_PROVIDER);
-    src = src.replace(APP_DELEGATE_WINDOW_BLOCK, APP_DELEGATE_WINDOW_REPLACEMENT);
-
-    cfg.modResults.contents = src;
+    cfg.modResults.contents = addSceneSupportToAppDelegate(cfg.modResults.contents);
     return cfg;
   });
 
@@ -116,3 +127,7 @@ const withSceneLifecycle = (config) =>
   withAppDelegateSceneSupport(withSceneDelegateFile(withSceneManifest(config)));
 
 module.exports = withSceneLifecycle;
+// For unit tests (config/__tests__/withSceneLifecycle.test.js).
+module.exports.addSceneSupportToAppDelegate = addSceneSupportToAppDelegate;
+module.exports.SCENE_DELEGATE_SOURCE = SCENE_DELEGATE_SOURCE;
+module.exports.SCENE_MANIFEST = SCENE_MANIFEST;

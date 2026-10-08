@@ -4,7 +4,8 @@
   "private": true,
   "description": "Build-time configuration shared by the apps: Expo config, config plugins, Metro. Node only; never bundled into an app.",
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test --test-reporter=spec \"__tests__/**/*.test.js\""
   },
   "peerDependencies": {
     "expo": "~57.0.27"
