@@ -1,2 +1,2 @@
 # streaming-app
-Streaming App Project
+StreamShelf Project
