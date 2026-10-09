@@ -1,10 +1,13 @@
 import { jest } from '@jest/globals';
 import { NavigationContainer, type InitialState } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CHANNELS_URL, COUNTRIES_URL } from '../../api/iptv/metadata';
 import { categoryPlaylistUrl, ENGLISH_PLAYLIST_URL } from '../../api/iptv/rails';
+import type { InputAdapter } from '../../input/adapters/InputAdapter';
+import { InputProvider } from '../../input/InputProvider';
+import type { AppKey, Dispatch, InputResult } from '../../input/keys';
 import { AppContent } from '../../screens/AppShell';
 import { RootNavigator } from '../../screens/RootNavigator';
 import { useMyListStore } from '../../state/myListStore';
@@ -38,6 +41,16 @@ export const metadataRoutes = (): Record<string, MockRoute> => ({
   [COUNTRIES_URL]: fixture('countries.json'),
 });
 
+/** Longer than FlatList's default `updateCellsBatchingPeriod` (50 ms). */
+const FLATLIST_BATCH_MS = 100;
+
+/**
+ * Lets FlatLists finish rendering after their data changed. They render new rows in a batch
+ * shortly afterwards; without this, that can land after the test ends (an `act` warning).
+ */
+export const flushListBatches = () =>
+  act(() => new Promise<void>((resolve) => setTimeout(resolve, FLATLIST_BATCH_MS)));
+
 /** An empty, loaded My List, quiet request logs and empty storage: call in `beforeEach`. */
 export async function resetAppState() {
   jest.spyOn(logger, 'debug').mockImplementation(() => undefined);
@@ -46,16 +59,49 @@ export async function resetAppState() {
   await AsyncStorage.clear();
 }
 
-/** The whole app (screens, splash, not-connected cover) with a fresh QueryClient. */
-export async function renderApp() {
+/**
+ * A stand-in platform adapter: `press` sends a key the way a remote or Back button would, and
+ * returns the result (`pass` = the platform's default would run, e.g. leaving the app).
+ */
+export function createTestInput() {
+  let send: Dispatch = () => 'pass';
+  const setCanGoBack = jest.fn<(canGoBack: boolean) => void>();
+  const adapter: InputAdapter = {
+    start: (dispatch) => {
+      send = dispatch;
+      return () => {
+        send = () => 'pass';
+      };
+    },
+    setCanGoBack,
+  };
+  const press = async (key: AppKey): Promise<InputResult> => {
+    let result: InputResult = 'pass';
+    await act(() => {
+      result = send({ key });
+    });
+    return result;
+  };
+  return { adapter, press, setCanGoBack };
+}
+
+/**
+ * The whole app (screens, splash, not-connected cover, exit prompt) with a fresh QueryClient.
+ * Returns a test input to press keys with (unless a real `adapter` is passed instead).
+ */
+export async function renderApp(adapter?: InputAdapter) {
   const { wrapper: QueryWrapper } = createQueryWrapper();
+  const input = createTestInput();
   await render(
     <SafeAreaProvider>
       <QueryWrapper>
-        <AppContent />
+        <InputProvider adapter={adapter ?? input.adapter}>
+          <AppContent />
+        </InputProvider>
       </QueryWrapper>
     </SafeAreaProvider>,
   );
+  return input;
 }
 
 /** The navigator opened straight on one channel's Detail screen. */

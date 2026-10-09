@@ -1,3 +1,4 @@
+import { hardwareBackAdapter } from '@app/shared/input/adapters/hardwareBackAdapter';
 import { AppShell } from '@app/shared/screens/AppShell';
 import { logger } from '@app/shared/utils/logger';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -12,7 +13,7 @@ ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch
 export default function App() {
   return (
     <>
-      <AppShell />
+      <AppShell inputAdapter={hardwareBackAdapter} />
       <StatusBar style="light" />
     </>
   );

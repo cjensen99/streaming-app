@@ -130,6 +130,19 @@ a 390-wide phone; `shared/ui/scale.ts` and `scale.mobile.ts` convert each to rea
 and `shared/ui/metrics.ts` / `metrics.mobile.ts` hold every size (type, spacing, tiles). Components
 use `metrics` and the colour tokens (`shared/ui/colors.ts`), so most are a single file for both.
 
+## Remote and Back input
+
+Every key press goes through one route (`shared/input/`). Each platform has its own adapter with
+its own key map (`input/adapters/remoteAdapter.android.ts` for Android TV and Fire TV,
+`remoteAdapter.ios.ts` for Apple TV, `hardwareBackAdapter.ts` for phones), all implementing one
+interface (`InputAdapter`) and emitting the same app keys: `up`, `down`, `left`, `right`,
+`select`, `back`, `playPause`. A dispatcher then offers each press to input layers, newest first
+(`useInputLayer`), and finally to Back navigation, so nothing past the adapter knows which device
+a press came from.
+
+Back goes back a screen. On the top screen it's left to the platform: Android TV, Fire TV and
+Android phones leave the app, and Apple TV's Menu returns to the home screen (Apple's rule).
+
 ## Conventions
 
 ESLint enforces these rules (`eslint.config.js`):

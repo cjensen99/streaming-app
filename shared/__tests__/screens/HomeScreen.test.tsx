@@ -5,7 +5,7 @@ import { categoryPlaylistUrl } from '../../api/iptv/rails';
 import { useMyListStore } from '../../state/myListStore';
 import { imageRenders } from '../helpers/mockImage';
 import { fixture, mockFetch } from '../helpers/mockFetch';
-import { appRoutes, renderApp, resetAppState } from '../helpers/renderScreens';
+import { appRoutes, flushListBatches, renderApp, resetAppState } from '../helpers/renderScreens';
 
 jest.mock('../../ui/Image', () => jest.requireActual<object>('../helpers/mockImage'));
 const mockPrefetch = jest.fn((_urls: string[]) => Promise.resolve(true));
@@ -16,9 +16,6 @@ beforeEach(async () => {
   mockPrefetch.mockClear();
   await resetAppState();
 });
-
-/** Longer than FlatList's default `updateCellsBatchingPeriod` (50 ms). */
-const FLATLIST_BATCH_MS = 100;
 
 /** The titles of the tiles in one rail, in order. */
 const tilesIn = (railTestId: string) =>
@@ -85,6 +82,7 @@ describe('Home', () => {
     await allRailsLoaded();
 
     expect(tilesIn('rail-my-list')).toEqual(['ESPNews', 'bloomberg TV']);
+    await flushListBatches(); // its items changed as the rails loaded
   });
 
   it('renders only the new tile when a channel is added to My List', async () => {
@@ -99,11 +97,8 @@ describe('Home', () => {
     await allRailsLoaded();
     imageRenders.mockClear();
 
-    await act(async () => {
-      useMyListStore.getState().add('BloombergTV.us');
-      // FlatList renders new rows in a batch shortly after its data changes; let it finish here.
-      await new Promise((resolve) => setTimeout(resolve, FLATLIST_BATCH_MS));
-    });
+    await act(() => useMyListStore.getState().add('BloombergTV.us'));
+    await flushListBatches();
 
     expect(imageRenders.mock.calls).toEqual([['https://i.imgur.com/bloomberg.png']]);
   });

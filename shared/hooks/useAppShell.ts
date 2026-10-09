@@ -16,7 +16,7 @@ export interface AppShellState {
  * App-wide state above the screens. Keeps the splash screen up until the first screen is worth
  * showing: My List is read and every category rail has loaded or failed, or `SPLASH_MAX_WAIT_MS`
  * has passed (slow networks then see loading rails). Offline, it hides straight away so the
- * "No internet connection" screen shows.
+ * "No internet connection" screen shows. (Back and navigation: `useAppNavigation`.)
  */
 export function useAppShell(): AppShellState {
   const isOnline = useIsOnline();
