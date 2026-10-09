@@ -1,0 +1,74 @@
+import { StyleSheet } from 'react-native';
+import { colors } from './colors';
+import { metrics } from './metrics';
+import { Pressable, type PressState } from './Pressable';
+import { Text } from './Text';
+
+export type ButtonVariant = 'primary' | 'secondary';
+
+export interface ButtonProps {
+  label: string;
+  onSelect: () => void;
+  /** `primary` (light) for a screen's main action. Defaults to `secondary`. */
+  variant?: ButtonVariant;
+  disabled?: boolean;
+  /** Defaults to `label`. */
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  testID?: string;
+}
+
+export function Button({
+  label,
+  onSelect,
+  variant = 'secondary',
+  disabled = false,
+  accessibilityLabel = label,
+  accessibilityHint,
+  testID,
+}: ButtonProps) {
+  const style = ({ pressed, focused }: PressState) => [
+    styles.base,
+    variant === 'primary' ? styles.primary : styles.secondary,
+    pressed && (variant === 'primary' ? styles.primaryPressed : styles.secondaryPressed),
+    focused && styles.focused,
+    disabled && styles.disabled,
+  ];
+
+  return (
+    <Pressable
+      onSelect={onSelect}
+      disabled={disabled}
+      style={style}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled }}
+      testID={testID}
+    >
+      <Text variant="body" tone={variant === 'primary' ? 'inverse' : 'primary'} numberOfLines={1}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  base: {
+    height: metrics.button.height,
+    paddingHorizontal: metrics.button.paddingHorizontal,
+    borderRadius: metrics.radius.md,
+    // Always drawn (transparent until focused), so focusing doesn't shift the layout.
+    borderWidth: metrics.focusBorderWidth,
+    borderColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primary: { backgroundColor: colors.primaryButton },
+  primaryPressed: { backgroundColor: colors.primaryButtonPressed },
+  secondary: { backgroundColor: colors.surface },
+  secondaryPressed: { backgroundColor: colors.surfacePressed },
+  focused: { borderColor: colors.focus },
+  disabled: { opacity: 0.4 },
+});

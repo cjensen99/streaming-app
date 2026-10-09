@@ -66,7 +66,13 @@ describe('useMyList', () => {
     const { wrapper } = createQueryWrapper();
 
     const { result } = await renderHook(() => useMyList(), { wrapper });
+    expect(result.current.isLoading).toBe(true);
 
+    // Still loading once the rails have arrived: only reading the saved list ends it. (Waiting
+    // also lets the downloads finish inside the test, so no update lands after it.)
+    await waitFor(() =>
+      expect(result.current.items.every((item) => item.status !== 'pending')).toBe(true),
+    );
     expect(result.current.isLoading).toBe(true);
   });
 

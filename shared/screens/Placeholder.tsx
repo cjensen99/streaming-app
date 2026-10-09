@@ -1,34 +1,66 @@
-// Temporary Phase 2 screen, replaced by the real navigator in Phase 7. It exists to prove that
-// both apps resolve `@app/shared` and that the phone app picks up `.mobile.tsx` overrides.
-// Named colours are a stopgap until the design tokens in `shared/ui/` land (Phase 6).
-import { Platform, StyleSheet, Text, View } from 'react-native';
-import { useHomeRails } from '../hooks/useHomeRails';
+// Temporary screen, replaced by the real navigator and Home screen in Phase 7. It renders the
+// Phase 6 components with live data so they can be checked on every device.
+import { memo, useMemo } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import { ContentRail } from '../components/ContentRail';
+import { NotConnectedState } from '../components/NotConnectedState';
+import { type HomeRail, useHomeRails } from '../hooks/useHomeRails';
+import { useIsOnline } from '../hooks/useIsOnline';
+import { useMyList } from '../hooks/useMyList';
+import type { TileItem } from '../types/content';
+import { colors } from '../ui/colors';
+import { metrics } from '../ui/metrics';
+import { Text } from '../ui/Text';
+import { logger } from '../utils/logger';
+
+const onSelect = (id: string) => logger.debug(`Selected ${id}`);
 
 export default function Placeholder() {
-  // Temporary (Phase 4): proves real data loads on device. Phase 7 replaces this screen.
+  const isOnline = useIsOnline();
   const rails = useHomeRails();
+  const myList = useMyList();
+
+  if (!isOnline) return <NotConnectedState />;
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>StreamShelf</Text>
-      <Text style={styles.body}>
-        TV build · {Platform.OS} · isTV={String(Platform.isTV)}
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Text variant="title" style={styles.title}>
+        StreamShelf
       </Text>
-      {rails.map(({ config, rail, isLoading, error }) => (
-        <Text key={config.id} style={styles.body}>
-          {config.title}:{' '}
-          {isLoading
-            ? 'loading…'
-            : error
-              ? `error (${error.kind})`
-              : `${rail?.items.length ?? 0} channels`}
-        </Text>
+      <ContentRail
+        title="My List"
+        items={myList.isLoading ? undefined : myList.items}
+        emptyMessage="No channels in My List yet"
+        onSelect={onSelect}
+      />
+      {rails.map((homeRail) => (
+        <CategoryRail key={homeRail.config.id} homeRail={homeRail} />
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
+const CategoryRail = memo(function CategoryRail({ homeRail }: { homeRail: HomeRail }) {
+  const { config, rail, isLoading, error, retry } = homeRail;
+  const items = useMemo(
+    () =>
+      rail?.items.map((channel): TileItem => ({ status: 'available', id: channel.id, channel })),
+    [rail],
+  );
+  return (
+    <ContentRail
+      title={config.title}
+      items={items}
+      isLoading={isLoading}
+      isError={!!error}
+      onRetry={retry}
+      emptyMessage="No channels right now"
+      onSelect={onSelect}
+    />
+  );
+});
+
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'black' },
-  title: { color: 'white', fontSize: 64, fontWeight: '700' },
-  body: { color: 'white', fontSize: 32, marginTop: 16 },
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { paddingVertical: metrics.screen.paddingVertical, gap: metrics.spacing.xl },
+  title: { paddingHorizontal: metrics.screen.paddingHorizontal },
 });

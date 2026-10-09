@@ -66,7 +66,8 @@ describe('useChannelDetail', () => {
   });
 
   it('reports a channel that no loaded rail contains as unavailable', async () => {
-    mockNetwork();
+    // Metadata is held so its background download can't finish after the test.
+    mockNetwork({ holdMetadata: true });
     const { wrapper } = createQueryWrapper();
 
     const { result } = await renderHook(() => useChannelDetail('Unknown.us'), { wrapper });
@@ -85,11 +86,13 @@ describe('useChannelDetail', () => {
     await waitFor(() => expect(result.current.error?.kind).toBe('notFound'));
     expect(result.current.isUnavailable).toBe(false);
 
+    const firstError = result.current.error;
     const requestsBefore = jest.mocked(globalThis.fetch).mock.calls.length;
     await act(() => result.current.retry());
-    await waitFor(() =>
-      expect(jest.mocked(globalThis.fetch).mock.calls.length).toBeGreaterThan(requestsBefore),
-    );
+    // The retried rail fails again (a new error), so the retry has finished inside the test.
+    await waitFor(() => expect(result.current.error).not.toBe(firstError));
+    expect(result.current.error?.kind).toBe('notFound');
+    expect(jest.mocked(globalThis.fetch).mock.calls.length).toBeGreaterThan(requestsBefore);
   });
 
   it('reports loading, not unavailable, while the rails are still loading', async () => {

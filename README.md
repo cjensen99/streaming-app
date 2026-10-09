@@ -125,20 +125,26 @@ which can't load TypeScript from another package; `npm run typecheck` checks it.
 Shared code is TV-first: `Foo.tsx` is the TV version, and `Foo.mobile.tsx` overrides it in the
 phone app only (the phone app's Metro config and `tsconfig.json` `moduleSuffixes` resolve it).
 
+Sizes follow the same rule. TV layouts are designed for a 1920×1080 screen and phone layouts for
+a 390-wide phone; `shared/ui/scale.ts` and `scale.mobile.ts` convert each to real layout units,
+and `shared/ui/metrics.ts` / `metrics.mobile.ts` hold every size (type, spacing, tiles). Components
+use `metrics` and the colour tokens (`shared/ui/colors.ts`), so most are a single file for both.
+
 ## Conventions
 
 ESLint enforces these rules (`eslint.config.js`):
 
-| Import                                                                           | Allowed only in                                       |
-| -------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `react-tv-space-navigation`                                                      | `shared/focus/`                                       |
-| `react-native-video`                                                             | `shared/player/`                                      |
-| `TVEventHandler`, `useTVEventHandler`, `BackHandler`, `TVEventControl` (from RN) | `shared/input/`                                       |
-| `zustand`                                                                        | `shared/state/`                                       |
-| `@tanstack/react-query`                                                          | `shared/api/`, `shared/hooks/`                        |
-| `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`   | `shared/utils/` (wrapped by `storage`, `network`)     |
-| `react-native` (any import)                                                      | anywhere **except** `shared/api/` and `shared/types/` |
-| Raw hex colours                                                                  | `shared/ui/`                                          |
+| Import                                                                           | Allowed only in                                                                 |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `react-tv-space-navigation`                                                      | `shared/focus/`                                                                 |
+| `react-native-video`                                                             | `shared/player/`                                                                |
+| `TVEventHandler`, `useTVEventHandler`, `BackHandler`, `TVEventControl` (from RN) | `shared/input/`                                                                 |
+| `zustand`                                                                        | `shared/state/`                                                                 |
+| `@tanstack/react-query`                                                          | `shared/api/`, `shared/hooks/`                                                  |
+| `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`   | `shared/utils/` (wrapped by `storage`, `network`)                               |
+| `react-native` (any import)                                                      | anywhere **except** `shared/api/` and `shared/types/`                           |
+| Raw hex colours                                                                  | `shared/ui/`                                                                    |
+| `@app/config` (build-time Node code)                                             | app config files; in `shared/` only `@app/config/brand.json`, from `shared/ui/` |
 
 `shared/__tests__/` is exempt from the import rules so tests can set up and mock any layer.
 `react-hooks/exhaustive-deps` is an error.

@@ -1,6 +1,6 @@
 /**
- * Channel and rail domain types. `api/` builds them from iptv-org data (Phase 4) and My List
- * persists `ChannelSummary` snapshots (Phase 5), so they stay plain, serialisable data.
+ * Channel and rail domain types, built by `api/` from iptv-org data. They stay plain,
+ * serialisable data. (My List saves only channel ids, never these.)
  */
 
 /** Where and how to play a channel. Some streams require extra HTTP headers (e.g. a referrer). */
@@ -50,3 +50,15 @@ export interface Rail {
   title: string;
   items: ChannelSummary[];
 }
+
+/**
+ * One tile in a rail. Category rails hold only `available` tiles; My List also has saved channels
+ * that aren't (or aren't yet) in this launch's rails.
+ */
+export type TileItem =
+  /** In today's rails: show it and allow Play. */
+  | { status: 'available'; id: string; channel: ChannelSummary }
+  /** Every rail loaded and none contains it: iptv-org no longer lists it. Can only be removed. */
+  | { status: 'unavailable'; id: string }
+  /** Its rail is still loading, or failed this launch, so it can't be resolved yet. */
+  | { status: 'pending'; id: string };

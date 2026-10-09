@@ -30,6 +30,7 @@
     "react-native": "npm:react-native-tvos@0.86.3-0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-svg": "15.15.4",
     "react-native-video": "6.19.3"
   },
   "devDependencies": {

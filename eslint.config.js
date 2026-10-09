@@ -100,6 +100,27 @@ const RESTRICTIONS = [
       },
     ],
   },
+  // `@app/config` is build-time Node code. Its one runtime-safe file is the plain-JSON brand,
+  // which the design tokens import so the in-app and splash backgrounds can't drift.
+  {
+    forbiddenIn: SHARED_DIRS.filter((dir) => dir !== 'ui'),
+    patterns: [
+      {
+        regex: pkgRegex('@app/config'),
+        message: '@app/config is build-time only. Use the design tokens in shared/ui/.',
+      },
+    ],
+  },
+  {
+    forbiddenIn: ['ui'],
+    patterns: [
+      {
+        regex: '^@app/config(?!/brand\\.json$)',
+        message:
+          'Only @app/config/brand.json may be bundled; the rest of @app/config is Node code.',
+      },
+    ],
+  },
   {
     forbiddenIn: ['api', 'types'],
     patterns: [

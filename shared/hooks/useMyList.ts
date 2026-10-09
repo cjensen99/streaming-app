@@ -1,16 +1,10 @@
 import { useMemo } from 'react';
 import { useMyListStore } from '../state/myListStore';
-import type { ChannelSummary } from '../types/content';
+import type { ChannelSummary, TileItem } from '../types/content';
 import { useHomeRails } from './useHomeRails';
 
 /** A saved channel, looked up in this launch's rails. */
-export type MyListItem =
-  /** In today's rails: show it and allow Play. */
-  | { status: 'available'; id: string; addedAt: number; channel: ChannelSummary }
-  /** Every rail loaded and none contains it: iptv-org no longer lists it. Can only be removed. */
-  | { status: 'unavailable'; id: string; addedAt: number }
-  /** Its rail is still loading, or failed this launch, so it can't be resolved yet. */
-  | { status: 'pending'; id: string; addedAt: number };
+export type MyListItem = TileItem & { addedAt: number };
 
 export interface MyListState {
   /** Newest first. */

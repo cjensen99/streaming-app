@@ -1,0 +1,53 @@
+import type { ReactNode } from 'react';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { colors } from './colors';
+
+export type IconName = 'alert' | 'offline';
+
+/** 24×24 outline icons, drawn with the current stroke colour. Add icons here as screens need them. */
+const ICONS: Record<IconName, ReactNode> = {
+  alert: (
+    <>
+      <Circle cx={12} cy={12} r={10} />
+      <Path d="M12 7v6" />
+      <Circle cx={12} cy={16.5} r={0.5} />
+    </>
+  ),
+  offline: (
+    <>
+      <Path d="M2 8.8a14 14 0 0 1 20 0" />
+      <Path d="M5.3 12.3a9.5 9.5 0 0 1 13.4 0" />
+      <Path d="M8.6 15.8a5 5 0 0 1 6.8 0" />
+      <Circle cx={12} cy={19.5} r={0.5} />
+      <Path d="M3 3l18 18" />
+    </>
+  ),
+};
+
+export interface IconProps {
+  name: IconName;
+  size: number;
+  color?: string;
+  testID?: string;
+}
+
+/** A decorative icon: hidden from screen readers, so the text next to it must carry the meaning. */
+export function Icon({ name, size, color = colors.icon, testID }: IconProps) {
+  return (
+    <Svg
+      testID={testID}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+    >
+      {ICONS[name]}
+    </Svg>
+  );
+}
