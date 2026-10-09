@@ -18,8 +18,12 @@ export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Fetched once per launch: never refetched automatically (focus, reconnect, remount).
+        // Fetched once per launch: loaded data is never refetched (focus, reconnect, remount).
         staleTime: Infinity,
+        // When a connection returns, requests that failed or never ran start again (they have
+        // no data, so they count as stale); loaded data stays as it is. React Query's default,
+        // stated because the app relies on it.
+        refetchOnReconnect: true,
         // Kept for the whole session, so leaving Home and coming back never re-downloads.
         gcTime: Infinity,
         // api/client.ts already retries network errors once.

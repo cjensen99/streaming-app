@@ -77,7 +77,8 @@ describe('useChannelDetail', () => {
   });
 
   it('reports an error (not unavailable) when a rail failed, and retries the failed rail', async () => {
-    const { failRail } = mockNetwork();
+    // Metadata starts once the rails settle (even with one failed); held so it can't finish late.
+    const { failRail } = mockNetwork({ holdMetadata: true });
     failRail(categoryPlaylistUrl('movies'));
     const { wrapper } = createQueryWrapper();
 
@@ -90,7 +91,11 @@ describe('useChannelDetail', () => {
     const requestsBefore = jest.mocked(globalThis.fetch).mock.calls.length;
     await act(() => result.current.retry());
     // The retried rail fails again (a new error), so the retry has finished inside the test.
-    await waitFor(() => expect(result.current.error).not.toBe(firstError));
+    // (While it's retrying, `error` is null.)
+    await waitFor(() => {
+      expect(result.current.error).not.toBeNull();
+      expect(result.current.error).not.toBe(firstError);
+    });
     expect(result.current.error?.kind).toBe('notFound');
     expect(jest.mocked(globalThis.fetch).mock.calls.length).toBeGreaterThan(requestsBefore);
   });

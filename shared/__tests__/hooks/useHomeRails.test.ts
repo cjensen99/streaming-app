@@ -7,13 +7,6 @@ import { logger } from '../../utils/logger';
 import { fixture, mockFetch } from '../helpers/mockFetch';
 import { createQueryWrapper } from '../helpers/queryWrapper';
 
-// The factory runs when the hook is imported, before `mockPrefetch` exists, so it looks the
-// mock up at call time. (`mock` prefix: jest.mock factories may only use variables named so.)
-const mockPrefetch = jest.fn((_urls: string[]) => Promise.resolve(true));
-jest.mock('expo-image', () => ({
-  Image: { prefetch: (urls: string[]) => mockPrefetch(urls) },
-}));
-
 const EMPTY_PLAYLIST = '#EXTM3U\n';
 
 beforeEach(() => {
@@ -52,26 +45,6 @@ describe('useHomeRails', () => {
     expect(requests(ENGLISH_PLAYLIST_URL)).toBe(1);
   });
 
-  it('prefetches the logos of the first loaded rail', async () => {
-    mockFetch({
-      [ENGLISH_PLAYLIST_URL]: fixture('eng.m3u'),
-      [categoryPlaylistUrl('news')]: fixture('news.m3u'),
-      [categoryPlaylistUrl('sports')]: EMPTY_PLAYLIST,
-      [categoryPlaylistUrl('movies')]: EMPTY_PLAYLIST,
-    });
-    const { wrapper } = createQueryWrapper();
-
-    const { result } = await renderHook(() => useHomeRails(), { wrapper });
-    await waitFor(() => expect(result.current.every((rail) => !rail.isLoading)).toBe(true));
-
-    await waitFor(() =>
-      expect(mockPrefetch).toHaveBeenCalledWith([
-        'https://i.imgur.com/abcnewslive.png',
-        'https://i.imgur.com/bloomberg.png',
-      ]),
-    );
-  });
-
   it('shows the other rails when one fails, and can retry the failed one', async () => {
     const routes: Parameters<typeof mockFetch>[0] = {
       [ENGLISH_PLAYLIST_URL]: fixture('eng.m3u'),
@@ -93,6 +66,41 @@ describe('useHomeRails', () => {
     await act(() => result.current[1]?.retry());
     await waitFor(() => expect(result.current[1]?.rail?.items).toHaveLength(2));
     expect(result.current[1]?.error).toBeNull();
+  });
+
+  it('shows a retried rail as loading (not as its old error) until it finishes', async () => {
+    const routes: Parameters<typeof mockFetch>[0] = {
+      ...allRoutes(),
+      [categoryPlaylistUrl('sports')]: { status: 404 },
+    };
+    mockFetch(routes);
+    const { wrapper } = createQueryWrapper();
+    const { result } = await renderHook(() => useHomeRails(), { wrapper });
+    await waitFor(() => expect(result.current[1]?.error?.kind).toBe('notFound'));
+
+    routes[categoryPlaylistUrl('sports')] = { pending: true };
+    await act(() => result.current[1]?.retry());
+
+    await waitFor(() => expect(result.current[1]).toMatchObject({ isLoading: true, error: null }));
+  });
+
+  it('retries failed rails when the connection comes back, but not loaded ones', async () => {
+    const routes: Parameters<typeof mockFetch>[0] = {
+      ...allRoutes(),
+      [categoryPlaylistUrl('sports')]: { status: 404 },
+    };
+    const requests = mockFetch(routes);
+    const { wrapper } = createQueryWrapper();
+    const { result } = await renderHook(() => useHomeRails(), { wrapper });
+    await waitFor(() => expect(result.current[1]?.error?.kind).toBe('notFound'));
+
+    routes[categoryPlaylistUrl('sports')] = fixture('sports.m3u');
+    await act(() => onlineManager.setOnline(false));
+    await act(() => onlineManager.setOnline(true));
+
+    await waitFor(() => expect(result.current[1]?.rail?.items).toHaveLength(2));
+    expect(requests(categoryPlaylistUrl('sports'))).toBe(2);
+    expect(requests(categoryPlaylistUrl('news'))).toBe(1);
   });
 
   it('downloads once per launch: coming back to Home makes no new requests', async () => {

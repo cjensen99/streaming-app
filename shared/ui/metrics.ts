@@ -26,7 +26,9 @@ export const metrics: Metrics = {
   screen: { paddingHorizontal: scale(96), paddingVertical: scale(54) },
   tile,
   rail: { titleGap: scale(16), bodyHeight: tile.height + tile.labelGap + caption.lineHeight },
-  button: { height: scale(72), paddingHorizontal: scale(40) },
+  // Sized so the whole Detail page fits a 1080p screen without scrolling.
+  detail: { artworkWidth: scale(480), artworkPadding: scale(40), factColumnMinWidth: scale(420) },
+  button: { height: scale(72), paddingHorizontal: scale(40), iconSize: scale(32), gap: scale(16) },
   stateIcon: scale(96),
   stateMaxWidth: scale(960),
   focusBorderWidth: scale(6),

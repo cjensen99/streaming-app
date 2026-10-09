@@ -32,8 +32,7 @@ export interface ChannelDetailState {
 export function useChannelDetail(channelId: string): ChannelDetailState {
   const rails = useHomeRails();
   const channels = useMemo(() => rails.flatMap(({ rail }) => rail?.items ?? []), [rails]);
-  const channelIds = useMemo(() => [...new Set(channels.map((c) => c.id))], [channels]);
-  const metadataResult = useChannelMetadata(channelIds);
+  const metadataResult = useChannelMetadata();
 
   const summary = channels.find((channel) => channel.id === channelId);
   const metadata = metadataResult.data?.[channelId];
@@ -53,7 +52,8 @@ export function useChannelDetail(channelId: string): ChannelDetailState {
       description: describeChannel(summary, metadata),
     },
     isLoading: missing && stillLoading,
-    isMetadataLoading: !missing && !metadataResult.data && metadataResult.isFetching,
+    // Pending covers waiting for the rails to settle, downloading and waiting for a connection.
+    isMetadataLoading: !missing && metadataResult.isPending,
     error: missing && !stillLoading ? (failedRails[0]?.error ?? null) : null,
     retry,
     isUnavailable: missing && !stillLoading && failedRails.length === 0,

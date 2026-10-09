@@ -2,9 +2,12 @@ import type { ReactNode } from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors } from './colors';
 
-export type IconName = 'alert' | 'offline';
+export type IconName = 'alert' | 'offline' | 'play' | 'plus' | 'check';
 
-/** 24×24 outline icons, drawn with the current stroke colour. Add icons here as screens need them. */
+/**
+ * 24×24 icons drawn in the icon's colour (`currentColor`): outlines, except `play`, which is
+ * filled. Add icons here as screens need them.
+ */
 const ICONS: Record<IconName, ReactNode> = {
   alert: (
     <>
@@ -22,6 +25,9 @@ const ICONS: Record<IconName, ReactNode> = {
       <Path d="M3 3l18 18" />
     </>
   ),
+  play: <Path d="M7 4.5v15l12.5-7.5z" fill="currentColor" />,
+  plus: <Path d="M12 5v14M5 12h14" />,
+  check: <Path d="M5 12.5l4.5 4.5L19 7" />,
 };
 
 export interface IconProps {
@@ -39,8 +45,9 @@ export function Icon({ name, size, color = colors.icon, testID }: IconProps) {
       width={size}
       height={size}
       viewBox="0 0 24 24"
+      color={color}
       fill="none"
-      stroke={color}
+      stroke="currentColor"
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"

@@ -1,6 +1,4 @@
 import { type UseQueryResult, useQueries, useQueryClient } from '@tanstack/react-query';
-import { Image } from 'expo-image';
-import { useEffect } from 'react';
 import type { ApiError } from '../api/client';
 import { RAIL_CONFIG, type RailConfig } from '../api/iptv/rails';
 import { railQuery } from '../api/queries';
@@ -10,14 +8,14 @@ export interface HomeRail {
   config: RailConfig;
   /** Undefined until the rail has downloaded (once per launch). */
   rail: Rail | undefined;
-  /** True until the rail has data: downloading, or waiting for a connection. */
+  /**
+   * No data yet and still trying: downloading, waiting for a connection, or retrying after a
+   * failure (React Query clears the old error when a retry starts).
+   */
   isLoading: boolean;
   error: ApiError | null;
   retry: () => void;
 }
-
-/** Logos of the first loaded rail are fetched ahead, so the first tiles appear with images. */
-const PREFETCH_LOGO_COUNT = 10;
 
 /**
  * Builds the hook's result. React Query only re-runs this when a rail's query result changes
@@ -41,19 +39,8 @@ function toHomeRails(results: UseQueryResult<Rail, ApiError>[]): HomeRail[] {
  */
 export function useHomeRails(): HomeRail[] {
   const client = useQueryClient();
-  const rails = useQueries({
+  return useQueries({
     queries: RAIL_CONFIG.map((config) => railQuery(client, config)),
     combine: toHomeRails,
   });
-
-  const firstLogos = rails
-    .find(({ rail }) => rail && rail.items.length > 0)
-    ?.rail?.items.slice(0, PREFETCH_LOGO_COUNT)
-    .flatMap((channel) => (channel.logoUrl ? [channel.logoUrl] : []))
-    .join('\n');
-  useEffect(() => {
-    if (firstLogos) void Image.prefetch(firstLogos.split('\n'));
-  }, [firstLogos]);
-
-  return rails;
 }

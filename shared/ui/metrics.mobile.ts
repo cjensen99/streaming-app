@@ -25,7 +25,8 @@ export const metrics: Metrics = {
   screen: { paddingHorizontal: scale(16), paddingVertical: scale(16) },
   tile,
   rail: { titleGap: scale(10), bodyHeight: tile.height + tile.labelGap + caption.lineHeight },
-  button: { height: scale(48), paddingHorizontal: scale(20) },
+  detail: { artworkWidth: '100%', artworkPadding: scale(28), factColumnMinWidth: scale(160) },
+  button: { height: scale(48), paddingHorizontal: scale(20), iconSize: scale(20), gap: scale(8) },
   stateIcon: scale(56),
   stateMaxWidth: scale(340),
   // Phones show focus only for hardware keyboards; keep the outline thin.

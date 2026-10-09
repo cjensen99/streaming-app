@@ -1,3 +1,5 @@
+import type { DimensionValue } from 'react-native';
+
 /** Font size and line height of one text style. */
 export interface TypeSize {
   fontSize: number;
@@ -29,7 +31,14 @@ export interface Metrics {
     /** Height of a rail's tiles and labels, kept by its loading/error/empty states too. */
     bodyHeight: number;
   };
-  button: { height: number; paddingHorizontal: number };
+  detail: {
+    /** The 16:9 artwork card at the top of Detail. */
+    artworkWidth: DimensionValue;
+    artworkPadding: number;
+    /** Facts sit in 2 columns when both get at least this width, else in 1. */
+    factColumnMinWidth: number;
+  };
+  button: { height: number; paddingHorizontal: number; iconSize: number; gap: number };
   /** Icons in full-screen states (error, not connected). */
   stateIcon: number;
   /** Max width of the centred message in full-screen states. */

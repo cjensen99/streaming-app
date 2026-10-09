@@ -14,7 +14,7 @@ describe('ContentTile', () => {
   it('shows the logo and the name, and is labelled with the name', async () => {
     await render(<ContentTile item={tile('CNN.us')} onSelect={jest.fn()} />);
 
-    expect(screen.getByTestId('tile-logo-CNN.us')).toBeOnTheScreen();
+    expect(screen.getByTestId('logo-CNN.us')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'CNN' })).toBeOnTheScreen();
   });
 
@@ -32,16 +32,16 @@ describe('ContentTile', () => {
       <ContentTile item={tile('CNN.us', { logoUrl: undefined })} onSelect={jest.fn()} />,
     );
 
-    expect(screen.queryByTestId('tile-logo-CNN.us')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('logo-CNN.us')).not.toBeOnTheScreen();
     expect(screen.getAllByText('CNN')).toHaveLength(2); // on the card and underneath
   });
 
   it('falls back to the name on the card when the logo fails to load', async () => {
     await render(<ContentTile item={tile('CNN.us')} onSelect={jest.fn()} />);
 
-    await fireEvent(screen.getByTestId('tile-logo-CNN.us'), 'error');
+    await fireEvent(screen.getByTestId('logo-CNN.us'), 'error');
 
-    expect(screen.queryByTestId('tile-logo-CNN.us')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('logo-CNN.us')).not.toBeOnTheScreen();
     expect(screen.getAllByText('CNN')).toHaveLength(2);
   });
 
@@ -72,6 +72,28 @@ describe('ContentTile', () => {
     await rerender(<ContentTile item={item} onSelect={onSelect} />);
 
     expect(imageRenders).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-render for a new item object that shows the same channel', async () => {
+    const onSelect = jest.fn();
+    const item = tile('CNN.us');
+    const { rerender } = await render(<ContentTile item={item} onSelect={onSelect} />);
+
+    // e.g. useMyList rebuilding its items after another channel was added
+    await rerender(<ContentTile item={{ ...item }} onSelect={onSelect} />);
+
+    expect(imageRenders).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-renders when it becomes available', async () => {
+    const onSelect = jest.fn();
+    const { rerender } = await render(
+      <ContentTile item={{ status: 'pending', id: 'CNN.us' }} onSelect={onSelect} />,
+    );
+
+    await rerender(<ContentTile item={tile('CNN.us')} onSelect={onSelect} />);
+
+    expect(screen.getByRole('button', { name: 'CNN' })).toBeOnTheScreen();
   });
 
   it('re-renders when its channel changes', async () => {

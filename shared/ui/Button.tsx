@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { colors } from './colors';
+import { Icon, type IconName } from './Icon';
 import { metrics } from './metrics';
 import { Pressable, type PressState } from './Pressable';
 import { Text } from './Text';
@@ -11,6 +12,8 @@ export interface ButtonProps {
   onSelect: () => void;
   /** `primary` (light) for a screen's main action. Defaults to `secondary`. */
   variant?: ButtonVariant;
+  /** Shown before the label. */
+  icon?: IconName;
   disabled?: boolean;
   /** Defaults to `label`. */
   accessibilityLabel?: string;
@@ -22,6 +25,7 @@ export function Button({
   label,
   onSelect,
   variant = 'secondary',
+  icon,
   disabled = false,
   accessibilityLabel = label,
   accessibilityHint,
@@ -46,6 +50,13 @@ export function Button({
       accessibilityState={{ disabled }}
       testID={testID}
     >
+      {icon && (
+        <Icon
+          name={icon}
+          size={metrics.button.iconSize}
+          color={variant === 'primary' ? colors.textInverse : colors.textPrimary}
+        />
+      )}
       <Text variant="body" tone={variant === 'primary' ? 'inverse' : 'primary'} numberOfLines={1}>
         {label}
       </Text>
@@ -64,6 +75,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: metrics.button.gap,
   },
   primary: { backgroundColor: colors.primaryButton },
   primaryPressed: { backgroundColor: colors.primaryButtonPressed },

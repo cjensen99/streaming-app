@@ -19,7 +19,9 @@ export default ({ config, projectRoot }: ConfigContext): ExpoConfig => ({
   slug: 'streamshelf',
   scheme: 'streamshelf',
   version: '1.0.0',
-  // Phones and tablets rotate; layouts are responsive and the player needs landscape.
+  // Menus are portrait-only and the player (Phase 11) is landscape-only, so every orientation
+  // stays allowed here and the app locks it at runtime: iOS starts in portrait through the
+  // expo-screen-orientation plugin below, and App.tsx locks portrait on both platforms.
   orientation: 'default',
   userInterfaceStyle: 'dark',
   icon: assetPath(projectRoot, 'icon.png'),
@@ -35,6 +37,9 @@ export default ({ config, projectRoot }: ConfigContext): ExpoConfig => ({
     // Back is handled by the input dispatcher (Phase 8), not the predictive-back animation.
     predictiveBackGestureEnabled: false,
   },
-  plugins: commonPlugins(projectRoot, { splashImageWidth: 200 }),
+  plugins: [
+    ...commonPlugins(projectRoot, { splashImageWidth: 200 }),
+    ['expo-screen-orientation', { initialOrientation: 'PORTRAIT_UP' }],
+  ],
   extra: { variant },
 });

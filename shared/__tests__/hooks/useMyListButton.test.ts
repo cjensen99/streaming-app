@@ -9,6 +9,9 @@ beforeEach(async () => {
   await AsyncStorage.clear();
 });
 
+const fullList = () =>
+  Array.from({ length: MY_LIST_LIMIT }, (_, i) => ({ id: `C${i}.us`, addedAt: i }));
+
 describe('useMyListButton', () => {
   it('adds the channel, then removes it', async () => {
     const { result } = await renderHook(() => useMyListButton('A.us'));
@@ -21,16 +24,23 @@ describe('useMyListButton', () => {
     expect(result.current.isSaved).toBe(false);
   });
 
-  it(`reports a full list at ${MY_LIST_LIMIT} channels, and does not add more`, async () => {
-    useMyListStore.setState({
-      entries: Array.from({ length: MY_LIST_LIMIT }, (_, i) => ({ id: `C${i}.us`, addedAt: i })),
-    });
+  it(`cannot add a channel once ${MY_LIST_LIMIT} are saved`, async () => {
+    useMyListStore.setState({ entries: fullList() });
     const { result } = await renderHook(() => useMyListButton('New.us'));
 
-    expect(result.current.isFull).toBe(true);
+    expect(result.current.canAdd).toBe(false);
     await act(() => result.current.toggle());
     expect(result.current.isSaved).toBe(false);
     expect(useMyListStore.getState().entries).toHaveLength(MY_LIST_LIMIT);
+  });
+
+  it('can still remove a saved channel when the list is full', async () => {
+    useMyListStore.setState({ entries: fullList() });
+    const { result } = await renderHook(() => useMyListButton('C0.us'));
+
+    expect(result.current).toMatchObject({ isSaved: true, canAdd: true });
+    await act(() => result.current.toggle());
+    expect(result.current.isSaved).toBe(false);
   });
 
   it("does not re-render another channel's button when one channel is toggled", async () => {
