@@ -1,5 +1,5 @@
 import { hardwareBackAdapter } from '@app/shared/input/adapters/hardwareBackAdapter';
-import { AppShell } from '@app/shared/screens/AppShell';
+import { AppShell } from '@app/shared/app/AppShell';
 import { logger } from '@app/shared/utils/logger';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';

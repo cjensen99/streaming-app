@@ -5,9 +5,9 @@ import {
 import { Platform } from 'react-native';
 import type { RootStackParamList } from '../types/navigation';
 import { device } from '../utils/device';
-import { DetailScreen } from './detail/DetailScreen';
-import { HomeScreen } from './home/HomeScreen';
-import { PlayerScreen } from './player/PlayerScreen';
+import { DetailScreen } from '../screens/detail/DetailScreen';
+import { HomeScreen } from '../screens/home/HomeScreen';
+import { PlayerScreen } from '../screens/player/PlayerScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
