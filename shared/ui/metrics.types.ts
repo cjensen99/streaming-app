@@ -39,6 +39,14 @@ export interface Metrics {
     factColumnMinWidth: number;
   };
   button: { height: number; paddingHorizontal: number; iconSize: number; gap: number };
+  player: {
+    /** The pause icon (TV) or the play/pause icon in the round button (phones). */
+    centerIcon: number;
+    /** Phones: the round play/pause button. */
+    centerButton: number;
+    /** Phones: the round Back button. */
+    backButton: number;
+  };
   /** Icons in full-screen states (error, not connected). */
   stateIcon: number;
   /** Max width of the centred message in full-screen states. */

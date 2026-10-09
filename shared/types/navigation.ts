@@ -2,6 +2,7 @@
 export type RootStackParamList = {
   Home: undefined;
   Detail: { channelId: string };
+  Player: { channelId: string };
 };
 
 // Registers the routes with React Navigation, so `useNavigation()` and `navigate()` are

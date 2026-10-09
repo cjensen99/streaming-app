@@ -37,4 +37,8 @@ export const colors = {
   focus: palette.blue,
   skeleton: palette.grey800,
   icon: palette.grey200,
+  /** Behind the video (letterboxing). */
+  video: '#000000',
+  /** Dims the video under the player's controls and pause icon. */
+  scrim: 'rgba(0, 0, 0, 0.55)',
 } as const;

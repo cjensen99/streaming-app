@@ -1,8 +1,7 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { type ChannelFact, channelFacts } from '../api/iptv/channelFacts';
 import { MY_LIST_LIMIT } from '../state/myListStore';
-import { logger } from '../utils/logger';
 import { type ChannelDetailState, useChannelDetail } from './useChannelDetail';
 import { useMyListButton } from './useMyListButton';
 
@@ -19,10 +18,12 @@ export interface DetailScreenState extends ChannelDetailState {
   toggleMyList: () => void;
   /** Set after an Add was refused because My List is full; cleared once there's room again. */
   fullMessage: string | null;
+  /** Opens the full-screen player. */
   play: () => void;
 }
 
 export function useDetailScreen(channelId: string): DetailScreenState {
+  const navigation = useNavigation();
   const isActive = useIsFocused();
   const channel = useChannelDetail(channelId);
   const { isSaved, canAdd, toggle } = useMyListButton(channelId);
@@ -40,10 +41,9 @@ export function useDetailScreen(channelId: string): DetailScreenState {
     if (canAdd) toggle();
   }, [canAdd, toggle]);
 
-  // Playback arrives with the player (Phase 11); the button is in its final place already.
   const play = useCallback(
-    () => logger.debug(`Play ${channelId} (not available yet)`),
-    [channelId],
+    () => navigation.navigate('Player', { channelId }),
+    [navigation, channelId],
   );
 
   return {

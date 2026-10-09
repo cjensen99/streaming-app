@@ -29,6 +29,7 @@ export const metrics: Metrics = {
   // Sized so the whole Detail page fits a 1080p screen without scrolling.
   detail: { artworkWidth: scale(480), artworkPadding: scale(40), factColumnMinWidth: scale(420) },
   button: { height: scale(72), paddingHorizontal: scale(40), iconSize: scale(32), gap: scale(16) },
+  player: { centerIcon: scale(144), centerButton: scale(208), backButton: scale(80) },
   stateIcon: scale(96),
   stateMaxWidth: scale(960),
   focusBorderWidth: scale(6),

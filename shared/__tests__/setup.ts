@@ -1,4 +1,6 @@
 import { jest } from '@jest/globals';
+import type * as ReactModule from 'react';
+import type * as ReactNativeModule from 'react-native';
 
 // Native modules have no implementation under Jest; use the libraries' official mocks.
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -20,3 +22,16 @@ jest.mock('expo-splash-screen', () => ({
 // The focus system's remote-key setup (the TV app imports it at startup). Harmless for the
 // phone project, which never renders a focus root.
 import '../focus/focusKeys';
+
+// The video player is native: a plain view carrying its props, so tests can read `source` and
+// `paused` and fire its events (`fireEvent(video, 'load')` calls `onLoad`).
+jest.mock('react-native-video', () => {
+  const { createElement } = jest.requireActual<typeof ReactModule>('react');
+  const { View } = jest.requireActual<typeof ReactNativeModule>('react-native');
+  return { __esModule: true, default: (props: object) => createElement(View, props) };
+});
+// Phones lock the orientation around the player; tests check the calls.
+jest.mock('expo-screen-orientation', () => ({
+  lockAsync: jest.fn(() => Promise.resolve()),
+  OrientationLock: { PORTRAIT_UP: 'PORTRAIT_UP', LANDSCAPE: 'LANDSCAPE' },
+}));

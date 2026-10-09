@@ -2,11 +2,11 @@ import type { ReactNode } from 'react';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors } from './colors';
 
-export type IconName = 'alert' | 'offline' | 'play' | 'plus' | 'check';
+export type IconName = 'alert' | 'offline' | 'play' | 'pause' | 'plus' | 'check' | 'back';
 
 /**
- * 24×24 icons drawn in the icon's colour (`currentColor`): outlines, except `play`, which is
- * filled. Add icons here as screens need them.
+ * 24×24 icons drawn in the icon's colour (`currentColor`): outlines, except `play` and `pause`,
+ * which are filled. Add icons here as screens need them.
  */
 const ICONS: Record<IconName, ReactNode> = {
   alert: (
@@ -26,8 +26,10 @@ const ICONS: Record<IconName, ReactNode> = {
     </>
   ),
   play: <Path d="M7 4.5v15l12.5-7.5z" fill="currentColor" />,
+  pause: <Path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor" />,
   plus: <Path d="M12 5v14M5 12h14" />,
   check: <Path d="M5 12.5l4.5 4.5L19 7" />,
+  back: <Path d="M19 12H5M11 6l-6 6 6 6" />,
 };
 
 export interface IconProps {

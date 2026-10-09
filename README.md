@@ -152,6 +152,23 @@ for phones (plain touch, so the focus library never reaches the phone bundle). M
 focuses the tile focused there last, or its first tile. Arrow and Select presses reach focus
 through the same input route as Back, after any input layer.
 
+## Playback
+
+**Play** on Detail opens a full-screen player over the menus (`shared/screens/player/`). Phones
+turn to landscape while it's open and back to portrait when it closes; TVs are always landscape.
+Back (remote, Android Back, or the on-screen arrow on phones) closes it and stops the stream,
+returning to Detail.
+
+- `shared/player/types.ts` is the player's shared interface (`PlayerProps`). `Player.tsx`
+  implements it with react-native-video (no native controls); a web build would add
+  `Player.web.tsx` (e.g. Shaka Player) with the same props.
+- `playback.ts` is the playback state as a pure reducer (loading → playing, paused, buffering,
+  error → Retry); `usePlayerScreen` adds a 15-second timeout for streams that never start or stall.
+- `PlayerUI` draws over the video. TVs: Select or Play/Pause toggles pause, and a dimmed screen
+  with a pause icon shows while paused. Phones (`PlayerUI.mobile.tsx`): a tap shows a play/pause
+  button and a back arrow, which hide after 3 seconds while playing. Both show a spinner while
+  waiting, and on failure an error with Retry and Back.
+
 ## Conventions
 
 ESLint enforces these rules (`eslint.config.js`):
@@ -185,11 +202,29 @@ ESLint enforces these rules (`eslint.config.js`):
   loading states have accessibility roles and labels, but the app hasn't been tried with a screen
   reader turned on. Before real users get it, do a pass on each platform (reading order, nothing
   hidden being read, announcing My List changes and errors) and label the player controls.
+- **Many iptv-org streams don't play.** They're community-listed and often offline, geo-blocked
+  or malformed (e.g. ABC News Live returns 403); those show the player's error with Retry. The app
+  doesn't fall back to another stream for the same channel.
 - **Dev menu app icon is blank on iOS/tvOS (development builds only).** App icons live in the
   root `assets/` folder, outside each app's project root. Expo's dev server builds the manifest
   icon URL as `/assets/../../assets/icon.png`, which collapses to the wrong path (Metro logs
   `Asset not found: apps/<app>/icon.png`). The real app icons are embedded natively by `prebuild`
   and are unaffected.
+
+## Future work
+
+- **More specific playback errors.** Every failure shows the same "Can't play this channel"
+  message today. The player reports enough to tell the user what actually went wrong:
+  - Refused (HTTP 401/403/451): "Not available in your region". This is often a geo-block, but
+    not always.
+  - Offline (HTTP 404, unreachable server, or the 15-second timeout): "This channel is offline
+    right now".
+  - Unplayable (malformed playlist, unsupported format): "This stream can't be played on this
+    device".
+
+  Android puts the HTTP status in the error text, while iOS/tvOS report numeric error codes, so
+  the mapping belongs in each platform's `Player`. Some geo-blocks can't be detected because they
+  play a "not available" video instead of failing.
 
 ## Decisions
 
