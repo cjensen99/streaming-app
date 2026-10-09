@@ -4,6 +4,18 @@ A streaming app for phones (iOS, Android) and TVs (tvOS, Android TV, Fire TV), b
 React Native (`react-native-tvos`), and TypeScript. It browses live channels from
 [iptv-org](https://github.com/iptv-org/iptv).
 
+## What it does
+
+- **Home:** a My List rail, then News, Sports and Movies rails of US English-language channels.
+- **Detail:** a channel's artwork, description and facts (country, network, launch year,
+  website), with Play and Add to / Remove from My List.
+- **My List:** saved channels, kept between launches, shown first on Home.
+- **Playback:** full screen over the menus, with pause and resume; landscape on phones.
+- **Loading, empty and error states** everywhere data loads, a "not connected" screen when
+  offline, and an error with Retry when a stream won't play.
+- **Input:** touch on phones; remote (and emulator keyboard) on TVs, with focus moving between
+  tiles and buttons.
+
 ## Requirements
 
 - Node 22.13+ (`nvm use` reads `.nvmrc`)
@@ -109,7 +121,7 @@ config/        "@app/config": build-time configuration (Node only, never bundled
   variant.js   APP_VARIANT parsing; name and bundle-ID suffixes per variant
   expo/        Expo config shared by the native apps (policy.js) and config plugins (plugins/)
   metro/       createMetroConfig: Expo's default config + per-app platform extensions
-assets/        app icons, splash, Android TV banner, tvOS brand assets (placeholders for now)
+assets/        app icons, splash, Android TV banner, tvOS brand assets (placeholders)
 ```
 
 npm workspaces link `shared/` and `config/` into `node_modules/@app/*`, so code imports them by
@@ -129,6 +141,41 @@ Sizes follow the same rule. TV layouts are designed for a 1920×1080 screen and 
 a 390-wide phone; `shared/ui/scale.ts` and `scale.mobile.ts` convert each to real layout units,
 and `shared/ui/metrics.ts` / `metrics.mobile.ts` hold every size (type, spacing, tiles). Components
 use `metrics` and the colour tokens (`shared/ui/colors.ts`), so most are a single file for both.
+
+### `shared/` folders
+
+| Folder        | What's in it                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `app/`        | The app's root: providers, the offline cover (`AppShell`), the navigator and its theme   |
+| `screens/`    | One folder per screen (`home/`, `detail/`, `player/`), with pieces only that screen uses |
+| `components/` | UI used by more than one screen: rails, tiles, loading, empty and error states           |
+| `hooks/`      | Screen state (`useHomeScreen`, `useDetailScreen`, `usePlayerScreen`) and data hooks      |
+| `api/`        | iptv-org fetching and parsing (`iptv/`), the HTTP client, React Query setup              |
+| `state/`      | My List (a Zustand store, saved through `utils/storage`)                                 |
+| `player/`     | The player interface, its react-native-video implementation, playback state, `PlayerUI`  |
+| `input/`      | Remote and Back input: platform adapters and the dispatcher                              |
+| `focus/`      | TV focus (`.tsx`) and its touch-only phone versions (`.mobile.tsx`)                      |
+| `ui/`         | Design system: colours, sizes (`metrics`), text, buttons, icons, images                  |
+| `types/`      | Domain types (channels, rails), error kinds, navigation routes                           |
+| `utils/`      | Wrappers for device facts, logging, storage and network status                           |
+
+### How data flows
+
+1. **Rails.** On launch, React Query downloads iptv-org's English playlist and the News, Sports and
+   Movies playlists (`api/iptv/`). Each playlist is parsed and filtered on the device: US and
+   English channels only, no geo-blocked or part-time streams, one entry per channel,
+   alphabetical. The result stays in memory for the session.
+2. **Metadata.** Once every rail has finished loading (or failed), `channels.json` and
+   `countries.json` download in the background and are trimmed to the channels in the rails.
+   Detail uses them for its facts and to build a description (iptv-org has no description
+   field).
+3. **My List** is a list of saved channel ids (`state/`). Each launch, the ids are looked up in the
+   rails to get the channels to show; one that iptv-org no longer lists shows as unavailable.
+4. **Screens** get all of this through hooks (`hooks/`); they never fetch or change data from
+   `api/` or `state/` themselves. The player gets a channel id from the route and plays that
+   channel's stream URL and headers.
+5. **Offline:** queries wait while there's no connection and start by themselves when one
+   appears; meanwhile a "not connected" screen covers the app.
 
 ## Remote and Back input
 
@@ -188,43 +235,91 @@ ESLint enforces these rules (`eslint.config.js`):
 `shared/__tests__/` is exempt from the import rules so tests can set up and mock any layer.
 `react-hooks/exhaustive-deps` is an error.
 
-## Known limitations
+## Incomplete work and next steps
 
-- **Fire TV hasn't been tested on a device yet.** It uses the Android TV build (same APK, same
-  remote handling and focus code), so it's expected to behave like Android TV, which was tested on
-  the emulator. Fire TV sticks are slower, so scrolling smoothness is worth a check on real
-  hardware.
-- **My List may not survive on Apple TV under storage pressure.** tvOS gives apps no guaranteed
-  local file storage; AsyncStorage keeps My List in the Caches folder there, which tvOS can clear
-  when the device runs low on space (normal restarts keep it). A fix would store it in
-  `NSUserDefaults` or iCloud key-value storage instead, which needs a native module.
-- **Screen reader support (VoiceOver / TalkBack) is unverified.** Tiles, buttons, rail titles and
-  loading states have accessibility roles and labels, but the app hasn't been tried with a screen
-  reader turned on. Before real users get it, do a pass on each platform (reading order, nothing
-  hidden being read, announcing My List changes and errors) and label the player controls.
-- **Many iptv-org streams don't play.** They're community-listed and often offline, geo-blocked
-  or malformed (e.g. ABC News Live returns 403); those show the player's error with Retry. The app
-  doesn't fall back to another stream for the same channel.
-- **Dev menu app icon is blank on iOS/tvOS (development builds only).** App icons live in the
-  root `assets/` folder, outside each app's project root. Expo's dev server builds the manifest
-  icon URL as `/assets/../../assets/icon.png`, which collapses to the wrong path (Metro logs
-  `Asset not found: apps/<app>/icon.png`). The real app icons are embedded natively by `prebuild`
-  and are unaffected.
+### Not built yet
 
-## Future work
-
+- **My List screen and tabs.** My List is shown as the first rail on Home, which covers saving and
+  finding channels. A dedicated full-screen My List grid, with Home / My List tabs, would make
+  larger lists easier to browse.
+- **Web and web-TV builds.** The code is structured for them, but none of it is implemented:
+  - the player is behind a shared interface, so a web build would add `Player.web.tsx` (e.g.
+    Shaka Player);
+  - the focus system has a shared interface, so a web build would add `.web` versions of its
+    components;
+  - device checks go through `utils/device.ts`.
 - **More specific playback errors.** Every failure shows the same "Can't play this channel"
   message today. The player reports enough to tell the user what actually went wrong:
   - Refused (HTTP 401/403/451): "Not available in your region". This is often a geo-block, but
     not always.
-  - Offline (HTTP 404, unreachable server, or the 15-second timeout): "This channel is offline
+  - Offline (HTTP 404, an unreachable server, or the 15-second timeout): "This channel is offline
     right now".
-  - Unplayable (malformed playlist, unsupported format): "This stream can't be played on this
+  - Unplayable (a broken playlist or an unsupported format): "This stream can't be played on this
     device".
 
-  Android puts the HTTP status in the error text, while iOS/tvOS report numeric error codes, so
-  the mapping belongs in each platform's `Player`. Some geo-blocks can't be detected because they
-  play a "not available" video instead of failing.
+  Android includes the HTTP status in its error text, while iOS/tvOS report numeric error codes,
+  so each platform's `Player` would do its own sorting. Some geo-blocks can't be detected, because
+  they play a "not available" video instead of failing.
+
+- **Error reporting (e.g. Sentry).** Nothing reports crashes or errors from users' devices yet.
+  Every error already goes through `utils/logger.ts`, so that's the single place to connect it.
+
+- **Final app artwork.** The app icons, splash screen, Android TV banner and tvOS brand assets in
+  `assets/` are placeholders.
+
+### Built but not fully verified
+
+- **Release builds.** Only development builds have been run so far. Production builds, signing,
+  store submission and release-mode performance haven't been checked.
+- **Physical devices.** The only physical device used in testing was an iPhone on iOS 26. The
+  Android phone, Android TV and Apple TV builds were tested on emulators and simulators only.
+- **Fire TV hasn't been tested at all.** It uses the same build as Android TV, with the same remote
+  handling and focus code, so it's expected to behave the same. Fire TV sticks are slower, so
+  scrolling smoothness is worth checking on real hardware.
+- **Screen readers (VoiceOver / TalkBack).** Tiles, buttons, rail titles and loading states have
+  accessibility roles and labels, but nobody has used the app with a screen reader turned on.
+  Before real users get it, the app needs a pass on each platform covering:
+  - the reading order;
+  - nothing hidden being read out;
+  - announcing My List changes and errors.
+
+  The player controls also need labels.
+
+- **Tablets.** The phone app runs on tablets, but it uses the phone layouts, locked to portrait,
+  and hasn't been checked on an iPad or an Android tablet.
+- **Performance on slower devices.** Memory was measured only on the Android TV emulator, with a
+  development build. It stayed flat while scrolling, but a real Fire TV stick would be the real
+  test.
+
+### Known limitations
+
+- **Many streams don't play.** iptv-org's lists are community-maintained, and many streams are
+  offline, geo-blocked or broken (e.g. ABC News Live returns 403). Those show the player's error
+  screen with Retry.
+- **Channel data is downloaded every launch.** The app downloads about 2.2 MB of playlists and
+  filters them on the device each time it starts. Nothing is kept between launches, and without a
+  connection the app shows a "not connected" screen. A small backend could pre-filter the data and
+  serve only what the app needs.
+- **My List may not survive on Apple TV when storage runs low.** tvOS gives apps no guaranteed
+  local storage, and AsyncStorage keeps My List in the Caches folder there, which tvOS can clear
+  when the device is low on space. Normal restarts keep it. A fix would store it in
+  `NSUserDefaults` or iCloud key-value storage, which needs a native module.
+- **US and English-language channels only.** The app's own text is English only.
+- **The player is basic.** Pausing a live stream and resuming continues from where it was paused,
+  behind the live broadcast, with no "jump to live" button. There are no volume, caption or
+  audio-track controls, no AirPlay or Chromecast, and no picture-in-picture.
+- **No programme guide.** Channels show no "now playing" or schedule information.
+
+### Project setup
+
+- **No CI.** Lint, typecheck and tests run locally only.
+- **No end-to-end tests,** such as Maestro flows on Android TV.
+- **Workarounds to remove when upgrading:**
+  - The UIScene config plugin can be deleted on Expo SDK 58 or later.
+  - `legacy-peer-deps` is needed only because `react-native-tvos` uses pre-release version
+    numbers.
+  - `react-tv-space-navigation` is pinned to a beta (6.0.0-beta1) and should move to a stable
+    release when one ships.
 
 ## Decisions
 
@@ -251,8 +346,8 @@ ESLint enforces these rules (`eslint.config.js`):
   `usesCleartextTraffic` is app-wide; API calls still use HTTPS.
 - **Separate `@app/config` package for build-time code.** `@app/shared` stays purely runtime code
   that Metro (and later react-native-web) bundles; Node-only code (app config, config plugins,
-  Metro config) lives in `@app/config`, linted and type-checked as Node. Unlike orkaTV-style path
-  aliases, package imports need no Babel, Metro, webpack or `tsconfig` alias lists to keep in sync.
+  Metro config) lives in `@app/config`, linted and type-checked as Node. Unlike path aliases, package
+  imports need no Babel, Metro, webpack or `tsconfig` alias lists to keep in sync.
 - **Data: TanStack Query, fetched once per launch, no caching between launches.** Rails and
   Detail metadata come from iptv-org's static files (no server-side filtering), downloaded and
   filtered on the device when the app starts, and kept in memory for the session
@@ -269,3 +364,29 @@ ESLint enforces these rules (`eslint.config.js`):
   emulator), which would pause every request; real failures show as errors with Retry instead.
 - **Fire TV** uses the Android TV build: leanback and touchscreen are declared as not required,
   so the same APK installs on Fire TV, Android TV and Google TV.
+- **Expo with generated native folders and development builds, not the React Native CLI.** Native
+  projects are generated from `app.config.ts` and config plugins (`expo prebuild`) and never
+  committed, so one config describes both platforms of each app and SDK upgrades don't mean
+  merging native template changes by hand. Development builds (not Expo Go) allow
+  `react-native-tvos` and native modules like react-native-video.
+- **Portrait-only menus and a landscape-only player on phones.** Every phone layout has one
+  orientation to design and test, and the player always gets the whole screen. TVs are always
+  landscape. Tablets use the phone layouts (see Incomplete work).
+- **Zustand for My List.** It's the only client state that outlives a screen. Zustand gives
+  selectors (components re-render only for the slice they read) and a `persist` middleware with
+  versioning, without providers or a large context value.
+- **Per-category playlists, with `channels.json` in the background.** The rails come from
+  iptv-org's News, Sports and Movies playlists (about 0.5 MB together) plus the English playlist
+  (0.66 MB) to filter by language. Detail's facts come from `channels.json` (about 1 MB
+  compressed), downloaded after the rails so it never delays Home. iptv-org's official SDK was
+  considered and rejected: it loads all 13 data files (50 MB+) with no way to ask for a subset.
+- **Descriptions are built from metadata.** iptv-org has no description field, so Detail writes a
+  sentence from what's known (categories, network, launch year), with fallbacks so it always
+  reads naturally.
+- **react-native-video behind a shared player interface.** One library covers iOS, tvOS, Android,
+  Android TV and Fire TV with HLS and custom headers. Screens use `shared/player/`, never the
+  library directly (enforced by ESLint), so a web build can add `Player.web.tsx` with the same
+  props.
+- **The player is a pushed screen, not a native modal.** A modal is a separate view controller on
+  tvOS, which would take focus away from the main view where the app receives remote presses.
+  A pushed screen with a fade looks the same and keeps the remote working.

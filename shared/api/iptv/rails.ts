@@ -7,7 +7,7 @@ import { parsePlaylist } from './parsePlaylist';
  * The three category rails under My List on Home, and the rules that pick their channels:
  * US + English only, no geo-blocked or part-time streams, one entry per channel, alphabetical,
  * at most 200. iptv-org has no server-side filtering, so whole playlists are downloaded and
- * filtered here (see PLAN → Data sources).
+ * filtered here (see README → Decisions).
  */
 
 export const RAIL_CONFIG = [
