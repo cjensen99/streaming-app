@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-
 import { CHANNELS_URL } from '../../api/iptv/metadata';
 import { categoryPlaylistUrl } from '../../api/iptv/rails';
 import { useMyListStore } from '../../state/myListStore';
+import { isPhoneBuild } from '../helpers/formFactor';
 import { imageRenders } from '../helpers/mockImage';
 import { fixture, mockFetch } from '../helpers/mockFetch';
 import { appRoutes, flushListBatches, renderApp, resetAppState } from '../helpers/renderScreens';
@@ -85,7 +86,7 @@ describe('Home', () => {
     await flushListBatches(); // its items changed as the rails loaded
   });
 
-  it('renders only the new tile when a channel is added to My List', async () => {
+  it('renders only the new tile when a channel is added to My List (phones)', async () => {
     useMyListStore.setState({
       entries: [
         { id: 'ESPNews.us', addedAt: 2 },
@@ -100,7 +101,15 @@ describe('Home', () => {
     await act(() => useMyListStore.getState().add('BloombergTV.us'));
     await flushListBatches();
 
-    expect(imageRenders.mock.calls).toEqual([['https://i.imgur.com/bloomberg.png']]);
+    if (isPhoneBuild) {
+      expect(imageRenders.mock.calls).toEqual([['https://i.imgur.com/bloomberg.png']]);
+    } else {
+      // TVs: the focus system's list renders tiles by position, so adding a channel at the front
+      // shifts (and re-renders) each visible tile once. Nothing renders twice.
+      const uris = imageRenders.mock.calls.map(([uri]) => uri);
+      expect(uris).toContain('https://i.imgur.com/bloomberg.png');
+      expect(new Set(uris).size).toBe(uris.length);
+    }
   });
 
   it('shows the other rails when one fails, and Retry reloads it', async () => {

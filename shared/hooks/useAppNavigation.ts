@@ -15,27 +15,28 @@ export interface AppNavigationState {
 }
 
 /**
- * Connects Back to navigation for the whole app: Back that no layer handled goes back a screen;
- * on the top screen it's left to the platform. Also tells the input adapter, whenever the
+ * The bottom of the input route: keys no input layer handled. Back goes back a screen (on the
+ * top screen it's left to the platform); other keys go to the focus system (TVs). Also tells the input adapter, whenever the
  * navigation changes, whether there's a screen to go back to (tvOS hands the Menu button to the
  * system on the top screen).
  */
 export function useAppNavigation(): AppNavigationState {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
-  const { dispatcher, adapter } = useInput();
+  const { dispatcher, adapter, focusHandler } = useInput();
   const canGoBack = useCallback(
     () => navigationRef.isReady() && navigationRef.canGoBack(),
     [navigationRef],
   );
 
   useEffect(() => {
-    dispatcher.setFallback((event) =>
-      event.key === 'back'
-        ? handleBack({ canGoBack, goBack: () => navigationRef.goBack() })
-        : 'pass',
-    );
+    dispatcher.setFallback((event) => {
+      if (event.key === 'back') {
+        return handleBack({ canGoBack, goBack: () => navigationRef.goBack() });
+      }
+      return focusHandler?.(event) ?? 'pass';
+    });
     return () => dispatcher.setFallback(null);
-  }, [dispatcher, navigationRef, canGoBack]);
+  }, [dispatcher, navigationRef, canGoBack, focusHandler]);
 
   const onNavigationChange = useCallback(
     () => adapter.setCanGoBack?.(canGoBack()),

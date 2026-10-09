@@ -1,12 +1,12 @@
 import { listenForBack } from './backButton';
 import type { InputAdapter } from './InputAdapter';
-import { listenForTVEvents, type TVEventKeyMap } from './tvEvents';
+import { listenForTVEvents, type TVKeyMaps } from './tvEvents';
 
 /**
  * Android TV and Fire TV remote events → app keys. Back isn't here: it arrives through the Back
  * button (`backButton.ts`). Events not listed are ignored.
  */
-const ANDROID_TV_KEYS: TVEventKeyMap = {
+const ANDROID_TV_KEYS: TVKeyMaps['keys'] = {
   up: 'up',
   down: 'down',
   left: 'left',
@@ -18,11 +18,19 @@ const ANDROID_TV_KEYS: TVEventKeyMap = {
   pause: 'playPause',
 };
 
+/** A held arrow: the long-press events, sent when the hold starts and when it ends. */
+const HOLD_KEYS: TVKeyMaps['holdKeys'] = {
+  longUp: 'up',
+  longDown: 'down',
+  longLeft: 'left',
+  longRight: 'right',
+};
+
 /** Android TV and Fire TV remotes. */
 export const remoteAdapter: InputAdapter = {
   start(dispatch) {
     const stopBack = listenForBack(dispatch);
-    const stopKeys = listenForTVEvents(ANDROID_TV_KEYS, dispatch);
+    const stopKeys = listenForTVEvents({ keys: ANDROID_TV_KEYS, holdKeys: HOLD_KEYS }, dispatch);
     return () => {
       stopBack();
       stopKeys();

@@ -16,3 +16,7 @@ jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn(() => Promise.resolve(true)),
   hideAsync: jest.fn(() => Promise.resolve(true)),
 }));
+
+// The focus system's remote-key setup (the TV app imports it at startup). Harmless for the
+// phone project, which never renders a focus root.
+import '../focus/focusKeys';

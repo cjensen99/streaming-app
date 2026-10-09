@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { InFocusRoot } from '../helpers/focusRoot';
 import { ContentRail, type ContentRailProps } from '../../components/ContentRail';
 import type { TileItem } from '../../types/content';
 import { tile } from '../helpers/channels';
@@ -22,6 +23,7 @@ const renderRail = (props: Partial<ContentRailProps> = {}) =>
       onSelect={jest.fn()}
       {...props}
     />,
+    { wrapper: InFocusRoot },
   );
 
 describe('ContentRail', () => {

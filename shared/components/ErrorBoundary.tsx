@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { logger } from '../utils/logger';
+import { DefaultFocus } from '../focus/DefaultFocus';
+import { FocusRoot } from '../focus/FocusRoot';
 import { ErrorState } from './ErrorState';
 
 export interface ErrorBoundaryProps {
@@ -30,12 +32,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   override render() {
     if (!this.state.error) return this.props.children;
+    // Its own focus area (the screens' areas went with them), with Try again focused (TVs).
     return (
-      <ErrorState
-        message="The app hit an unexpected problem."
-        onRetry={this.reset}
-        retryLabel="Try again"
-      />
+      <FocusRoot active>
+        <DefaultFocus>
+          <ErrorState
+            message="The app hit an unexpected problem."
+            onRetry={this.reset}
+            retryLabel="Try again"
+          />
+        </DefaultFocus>
+      </FocusRoot>
     );
   }
 }

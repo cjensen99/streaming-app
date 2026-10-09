@@ -1,11 +1,13 @@
-import { memo, type ReactNode, useCallback } from 'react';
-import { FlatList, type ListRenderItem, Platform, StyleSheet, View } from 'react-native';
+import { forwardRef, memo, type ReactNode, useCallback } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { FocusGroup } from '../focus/FocusGroup';
+import { FocusRail } from '../focus/FocusRail';
+import type { FocusRailHandle } from '../focus/types';
 import type { TileItem } from '../types/content';
 import { Button } from '../ui/Button';
 import { metrics } from '../ui/metrics';
 import { Text } from '../ui/Text';
 import { ContentTile } from './ContentTile';
-import { RAIL_ITEM_LENGTH, RAIL_VISIBLE_TILES } from './railLayout';
 import { RailSkeleton } from './RailSkeleton';
 
 export interface ContentRailProps {
@@ -28,39 +30,37 @@ export interface ContentRailProps {
  * A titled horizontal row of channel tiles, with its own loading, error and empty states. Every
  * state keeps the same height, so rails below don't jump as rails above finish loading.
  *
- * Rails hold up to 200 tiles, so the list is virtualised: tiles have a fixed width (positions are
- * computed, not measured), only about a screen's worth render at first and more are added as the
- * user scrolls, so logos are only downloaded for tiles that come near the screen.
+ * On TVs the row is one focus group that's always there, whatever its state, so the remote moves
+ * between rails in screen order; a rail without tiles (loading, empty) is simply skipped, and a
+ * failed rail's Retry can be focused. The ref focuses a tile (when the rail has tiles).
+ *
+ * Rails hold up to 200 tiles, so the row is virtualised (see `FocusRail`).
  */
-export const ContentRail = memo(function ContentRail({
-  title,
-  testID,
-  ...bodyProps
-}: ContentRailProps) {
-  return (
-    <View style={styles.rail} testID={testID}>
-      <Text variant="heading" accessibilityRole="header" style={styles.title}>
-        {title}
-      </Text>
-      <View style={styles.body}>
-        <RailBody title={title} {...bodyProps} />
+export const ContentRail = memo(
+  forwardRef<FocusRailHandle, ContentRailProps>(function ContentRail(
+    { title, testID, ...bodyProps },
+    ref,
+  ) {
+    return (
+      <View style={styles.rail} testID={testID}>
+        <Text variant="heading" accessibilityRole="header" style={styles.title}>
+          {title}
+        </Text>
+        <FocusGroup direction="horizontal" style={styles.body}>
+          <RailBody ref={ref} title={title} {...bodyProps} />
+        </FocusGroup>
       </View>
-    </View>
-  );
-});
+    );
+  }),
+);
 
 /** What's under the title: the error, loading, empty or tiles state (checked in that order). */
-function RailBody({
-  title,
-  items,
-  isLoading = false,
-  isError = false,
-  onRetry,
-  emptyMessage,
-  onSelect,
-}: Omit<ContentRailProps, 'testID'>) {
-  const renderItem = useCallback<ListRenderItem<TileItem>>(
-    ({ item }) => <ContentTile item={item} onSelect={onSelect} />,
+const RailBody = forwardRef<FocusRailHandle, Omit<ContentRailProps, 'testID'>>(function RailBody(
+  { title, items, isLoading = false, isError = false, onRetry, emptyMessage, onSelect },
+  ref,
+) {
+  const renderTile = useCallback(
+    (item: TileItem) => <ContentTile item={item} onSelect={onSelect} />,
     [onSelect],
   );
 
@@ -77,23 +77,18 @@ function RailBody({
   if (items.length === 0) return <RailMessage message={emptyMessage} />;
 
   return (
-    <FlatList
-      horizontal
+    <FocusRail
+      ref={ref}
       data={items}
-      renderItem={renderItem}
+      renderItem={renderTile}
       keyExtractor={keyExtractor}
-      getItemLayout={getItemLayout}
-      initialNumToRender={RAIL_VISIBLE_TILES}
-      maxToRenderPerBatch={RAIL_VISIBLE_TILES}
-      // Screens of tiles kept rendered (default 21): one either side of the visible one.
-      windowSize={3}
-      // Detaching off-screen tiles saves memory on Android; on iOS it can blank rows.
-      removeClippedSubviews={Platform.OS === 'android'}
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.listContent}
+      itemWidth={metrics.tile.width}
+      gap={metrics.tile.gap}
+      inset={metrics.screen.paddingHorizontal}
+      height={metrics.rail.bodyHeight}
     />
   );
-}
+});
 
 /** A line of text (and optionally a button) in place of the tiles. */
 function RailMessage({ message, children }: { message: string; children?: ReactNode }) {
@@ -107,18 +102,10 @@ function RailMessage({ message, children }: { message: string; children?: ReactN
 
 const keyExtractor = (item: TileItem) => item.id;
 
-// Offsets include the list's leading padding, so scrolling to a tile lands exactly on it.
-const getItemLayout = (_: ArrayLike<TileItem> | null | undefined, index: number) => ({
-  length: metrics.tile.width,
-  offset: metrics.screen.paddingHorizontal + RAIL_ITEM_LENGTH * index,
-  index,
-});
-
 const styles = StyleSheet.create({
   rail: { gap: metrics.rail.titleGap },
   title: { paddingHorizontal: metrics.screen.paddingHorizontal },
   body: { height: metrics.rail.bodyHeight },
-  listContent: { paddingHorizontal: metrics.screen.paddingHorizontal, gap: metrics.tile.gap },
   message: {
     flex: 1,
     flexDirection: 'row',

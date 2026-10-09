@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { useCallback, useEffect } from 'react';
 import { usePrefetchChannelMetadata } from './useChannelMetadata';
+import { type HomeFocusState, type HomeRailKey, MY_LIST_RAIL, useHomeFocus } from './useHomeFocus';
 import { type HomeRail, useHomeRails } from './useHomeRails';
 import { type MyListState, useMyList } from './useMyList';
 
@@ -9,13 +10,16 @@ import { type MyListState, useMyList } from './useMyList';
 const PREFETCH_LOGO_COUNT = 10;
 
 export interface HomeScreenState {
+  focus: Omit<HomeFocusState, 'noteOpened'>;
   myList: MyListState;
   rails: HomeRail[];
   /** Every category rail failed: Home shows one full-screen error instead of three. */
   allRailsFailed: boolean;
   retryAllRails: () => void;
-  /** Opens Detail for a channel. Stable, so tiles can be memoised. */
-  openChannel: (channelId: string) => void;
+  /** Opens Detail for a channel in a category rail. Stable, so tiles can be memoised. */
+  openChannel: (channelId: string, rail: HomeRailKey) => void;
+  /** Opens Detail for a channel in the My List rail. Stable. */
+  openMyListChannel: (channelId: string) => void;
 }
 
 export function useHomeScreen(): HomeScreenState {
@@ -26,19 +30,29 @@ export function useHomeScreen(): HomeScreenState {
   // when it opens. Home doesn't show metadata, so it doesn't subscribe to it.
   usePrefetchChannelMetadata();
   usePrefetchFirstLogos(rails);
+  const { noteOpened, ...focus } = useHomeFocus(myList, rails);
 
   const openChannel = useCallback(
-    (channelId: string) => navigation.navigate('Detail', { channelId }),
-    [navigation],
+    (channelId: string, rail: HomeRailKey) => {
+      noteOpened(channelId, rail);
+      navigation.navigate('Detail', { channelId });
+    },
+    [navigation, noteOpened],
+  );
+  const openMyListChannel = useCallback(
+    (channelId: string) => openChannel(channelId, MY_LIST_RAIL),
+    [openChannel],
   );
   const retryAllRails = useCallback(() => rails.forEach((rail) => rail.retry()), [rails]);
 
   return {
+    focus,
     myList,
     rails,
     allRailsFailed: rails.every(({ error }) => error),
     retryAllRails,
     openChannel,
+    openMyListChannel,
   };
 }
 

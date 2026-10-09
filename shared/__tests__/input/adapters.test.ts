@@ -1,8 +1,8 @@
-import { describe, expect, it, jest } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { type HWEvent, TVEventControl, TVEventHandler } from 'react-native';
 import { hardwareBackAdapter } from '../../input/adapters/hardwareBackAdapter';
 import type * as RemoteAdapter from '../../input/adapters/remoteAdapter';
-import { tvEventToKey } from '../../input/adapters/tvEvents';
+import { HOLD_REPEAT_MS, tvEventToKey } from '../../input/adapters/tvEvents';
 import type { Dispatch, InputEvent } from '../../input/keys';
 import { mockBackButton } from '../helpers/backButton';
 
@@ -89,6 +89,48 @@ describe.each(['android', 'ios'] as const)('remoteAdapter.%s', (platform) => {
 
     expect(remote.remove).toHaveBeenCalled();
     expect(back.press()).toBe(false);
+  });
+});
+
+describe.each(['android', 'ios'] as const)('remoteAdapter.%s, holding an arrow', (platform) => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it(`repeats the key every ${HOLD_REPEAT_MS} ms until it's released`, () => {
+    jest.useFakeTimers();
+    const remote = mockRemote();
+    mockBackButton();
+    const received: InputEvent[] = [];
+    loadRemoteAdapter(platform).start((event) => (received.push(event), 'handled'));
+
+    remote.send({ eventType: 'longRight', eventKeyAction: 0 }); // hold starts
+    expect(received).toEqual([{ key: 'right' }]);
+
+    jest.advanceTimersByTime(HOLD_REPEAT_MS * 3);
+    expect(received).toHaveLength(4);
+
+    remote.send({ eventType: 'longRight', eventKeyAction: 1 }); // released
+    jest.advanceTimersByTime(HOLD_REPEAT_MS * 3);
+    expect(received).toHaveLength(4);
+  });
+
+  it('stops repeating when another button is pressed, or the adapter stops', () => {
+    jest.useFakeTimers();
+    const remote = mockRemote();
+    mockBackButton();
+    const received: InputEvent[] = [];
+    const stop = loadRemoteAdapter(platform).start((event) => (received.push(event), 'handled'));
+
+    remote.send({ eventType: 'longDown', eventKeyAction: 0 });
+    remote.send(press('select'));
+    jest.advanceTimersByTime(HOLD_REPEAT_MS * 3);
+    expect(received.map(({ key }) => key)).toEqual(['down', 'select']);
+
+    remote.send({ eventType: 'longUp', eventKeyAction: 0 });
+    stop();
+    jest.advanceTimersByTime(HOLD_REPEAT_MS * 3);
+    expect(received.map(({ key }) => key)).toEqual(['down', 'select', 'up']);
   });
 });
 

@@ -9,6 +9,8 @@ import { useAppNavigation } from '../hooks/useAppNavigation';
 import { useAppShell } from '../hooks/useAppShell';
 import type { InputAdapter } from '../input/adapters/InputAdapter';
 import { InputProvider } from '../input/InputProvider';
+import type { InputHandler } from '../input/keys';
+import { FocusProvider } from '../focus/FocusProvider';
 import { colors } from '../ui/colors';
 import { logger } from '../utils/logger';
 import { navigationTheme } from './navigationTheme';
@@ -23,14 +25,16 @@ SplashScreen.preventAutoHideAsync().catch((error: unknown) =>
 interface AppShellProps {
   /** The platform's input: `remoteAdapter` (TV) or `hardwareBackAdapter` (phones). */
   inputAdapter: InputAdapter;
+  /** TVs: the focus system's key handler (`sendKeyToFocus`). Phones have none. */
+  focusHandler?: InputHandler;
 }
 
 /** The whole app below each platform's `App.tsx`: providers, then `AppContent`. */
-export function AppShell({ inputAdapter }: AppShellProps) {
+export function AppShell({ inputAdapter, focusHandler }: AppShellProps) {
   return (
     <SafeAreaProvider style={styles.root}>
       <QueryProvider>
-        <InputProvider adapter={inputAdapter}>
+        <InputProvider adapter={inputAdapter} focusHandler={focusHandler}>
           <AppContent />
         </InputProvider>
       </QueryProvider>
@@ -41,7 +45,7 @@ export function AppShell({ inputAdapter }: AppShellProps) {
 /**
  * The screens, plus the "No internet connection" cover. The navigator stays mounted underneath
  * the cover, so when the connection returns the user is exactly where they were. While covered,
- * it's hidden from screen readers and can't be touched. (Exported for tests, which provide their
+ * it's hidden from screen readers, can't be touched, and (TVs) nothing under it can take focus. (Exported for tests, which provide their
  * own QueryClient and input adapter.)
  */
 export function AppContent() {
@@ -54,16 +58,18 @@ export function AppContent() {
         accessibilityElementsHidden={!isOnline}
         importantForAccessibility={isOnline ? 'auto' : 'no-hide-descendants'}
       >
-        <ErrorBoundary>
-          <NavigationContainer
-            ref={navigationRef}
-            theme={navigationTheme}
-            onReady={onNavigationChange}
-            onStateChange={onNavigationChange}
-          >
-            <RootNavigator />
-          </NavigationContainer>
-        </ErrorBoundary>
+        <FocusProvider enabled={isOnline}>
+          <ErrorBoundary>
+            <NavigationContainer
+              ref={navigationRef}
+              theme={navigationTheme}
+              onReady={onNavigationChange}
+              onStateChange={onNavigationChange}
+            >
+              <RootNavigator />
+            </NavigationContainer>
+          </ErrorBoundary>
+        </FocusProvider>
       </View>
       {!isOnline && (
         <View style={styles.cover}>

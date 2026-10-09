@@ -2,7 +2,8 @@ import { StyleSheet } from 'react-native';
 import { colors } from './colors';
 import { Icon, type IconName } from './Icon';
 import { metrics } from './metrics';
-import { Pressable, type PressState } from './Pressable';
+import { Focusable } from '../focus/Focusable';
+import type { FocusState } from '../focus/types';
 import { Text } from './Text';
 
 export type ButtonVariant = 'primary' | 'secondary';
@@ -31,7 +32,7 @@ export function Button({
   accessibilityHint,
   testID,
 }: ButtonProps) {
-  const style = ({ pressed, focused }: PressState) => [
+  const style = ({ pressed, focused }: FocusState) => [
     styles.base,
     variant === 'primary' ? styles.primary : styles.secondary,
     pressed && (variant === 'primary' ? styles.primaryPressed : styles.secondaryPressed),
@@ -40,7 +41,7 @@ export function Button({
   ];
 
   return (
-    <Pressable
+    <Focusable
       onSelect={onSelect}
       disabled={disabled}
       style={style}
@@ -60,7 +61,7 @@ export function Button({
       <Text variant="body" tone={variant === 'primary' ? 'inverse' : 'primary'} numberOfLines={1}>
         {label}
       </Text>
-    </Pressable>
+    </Focusable>
   );
 }
 

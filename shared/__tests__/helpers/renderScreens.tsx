@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CHANNELS_URL, COUNTRIES_URL } from '../../api/iptv/metadata';
 import { categoryPlaylistUrl, ENGLISH_PLAYLIST_URL } from '../../api/iptv/rails';
 import type { InputAdapter } from '../../input/adapters/InputAdapter';
+import { sendKeyToFocus } from '../../focus/focusKeys';
 import { InputProvider } from '../../input/InputProvider';
 import type { AppKey, Dispatch, InputResult } from '../../input/keys';
 import { AppContent } from '../../screens/AppShell';
@@ -87,15 +88,22 @@ export function createTestInput() {
 
 /**
  * The whole app (screens, splash, not-connected cover, exit prompt) with a fresh QueryClient.
- * Returns a test input to press keys with (unless a real `adapter` is passed instead).
+ * Returns a test input to press keys with (unless a real `adapter` is passed instead). With
+ * `withFocus`, keys reach the focus system as on a TV (arrows move focus, select selects).
  */
-export async function renderApp(adapter?: InputAdapter) {
+export async function renderApp({
+  adapter,
+  withFocus = false,
+}: { adapter?: InputAdapter; withFocus?: boolean } = {}) {
   const { wrapper: QueryWrapper } = createQueryWrapper();
   const input = createTestInput();
   await render(
     <SafeAreaProvider>
       <QueryWrapper>
-        <InputProvider adapter={adapter ?? input.adapter}>
+        <InputProvider
+          adapter={adapter ?? input.adapter}
+          focusHandler={withFocus ? sendKeyToFocus : undefined}
+        >
           <AppContent />
         </InputProvider>
       </QueryWrapper>

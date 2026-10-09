@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import type { TileItem } from '../types/content';
 import { colors } from '../ui/colors';
 import { metrics } from '../ui/metrics';
-import { Pressable } from '../ui/Pressable';
+import { Focusable } from '../focus/Focusable';
 import { SkeletonGroup } from '../ui/Skeleton';
 import { Text } from '../ui/Text';
 import { ChannelArtwork } from './ChannelArtwork';
@@ -38,7 +38,7 @@ export const ContentTile = memo(function ContentTile({ item, onSelect }: Content
   const channel = item.status === 'available' ? item.channel : undefined;
   const name = channel?.name ?? UNAVAILABLE_LABEL;
   return (
-    <Pressable
+    <Focusable
       onSelect={handleSelect}
       style={styles.tile}
       accessibilityRole="button"
@@ -57,7 +57,7 @@ export const ContentTile = memo(function ContentTile({ item, onSelect }: Content
           </Text>
         </>
       )}
-    </Pressable>
+    </Focusable>
   );
 }, areTilePropsEqual);
 

@@ -143,6 +143,15 @@ a press came from.
 Back goes back a screen. On the top screen it's left to the platform: Android TV, Fire TV and
 Android phones leave the app, and Apple TV's Menu returns to the home screen (Apple's rule).
 
+## Focus (TVs)
+
+On TVs, focus moves in JavaScript (`react-tv-space-navigation`), with the same rules on Apple TV,
+Android TV and Fire TV. Screens and components use only `shared/focus/` (`FocusRoot`,
+`Focusable`, `FocusRail`, …): the `.tsx` files implement it for TVs and the `.mobile.tsx` files
+for phones (plain touch, so the focus library never reaches the phone bundle). Moving into a rail
+focuses the tile focused there last, or its first tile. Arrow and Select presses reach focus
+through the same input route as Back, after any input layer.
+
 ## Conventions
 
 ESLint enforces these rules (`eslint.config.js`):

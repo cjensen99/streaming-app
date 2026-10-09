@@ -22,6 +22,8 @@ module.exports = {
       ...base,
       displayName: 'mobile',
       moduleFileExtensions: [...MOBILE_EXTENSIONS, ...DEFAULT_EXTENSIONS],
+      // Remote-control focus is TV-only: phones have no focus system to test.
+      testPathIgnorePatterns: ['/node_modules/', '<rootDir>/__tests__/focus/'],
     },
   ],
 };
