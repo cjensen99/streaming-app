@@ -18,7 +18,13 @@
     "format:check": "prettier --check .",
     "test": "npm run test --workspaces --if-present",
     "mobile": "npm run start -w apps/mobile",
-    "tv": "npm run start -w apps/native-tv"
+    "tv": "npm run start -w apps/native-tv",
+    "mobile:ios": "npm run ios -w apps/mobile --",
+    "mobile:android": "npm run android -w apps/mobile --",
+    "tv:ios": "npm run ios -w apps/native-tv --",
+    "tv:android": "npm run android -w apps/native-tv --",
+    "mobile:prebuild": "npm run prebuild -w apps/mobile --",
+    "tv:prebuild": "npm run prebuild -w apps/native-tv --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
