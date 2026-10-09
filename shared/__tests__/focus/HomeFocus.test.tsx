@@ -5,6 +5,7 @@ import { categoryPlaylistUrl } from '../../api/iptv/rails';
 import type { AppKey } from '../../input/keys';
 import { useMyListStore } from '../../state/myListStore';
 import { fixture, mockFetch } from '../helpers/mockFetch';
+import { imageRenders } from '../helpers/mockImage';
 import { appRoutes, renderApp, resetAppState } from '../helpers/renderScreens';
 
 jest.mock('../../ui/Image', () => jest.requireActual<object>('../helpers/mockImage'));
@@ -198,6 +199,19 @@ describe('Home focus', () => {
     await act(() => setConnected(true));
     await press('right');
     expect(focused()).toEqual({ label: 'bloomberg TV', rail: 'news' });
+  });
+
+  it('re-renders only the two tiles whose focus changed when focus moves', async () => {
+    const { press } = await startApp();
+    imageRenders.mockClear();
+
+    await press('right');
+
+    // The tile losing focus and the one gaining it (each redraws its outline), nothing else.
+    expect(imageRenders.mock.calls.map(([uri]) => uri)).toEqual([
+      'https://i.imgur.com/abcnewslive.png',
+      'https://i.imgur.com/bloomberg.png',
+    ]);
   });
 
   it('focuses Retry on the full-screen error when every rail failed', async () => {

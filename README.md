@@ -173,6 +173,18 @@ ESLint enforces these rules (`eslint.config.js`):
 
 ## Known limitations
 
+- **Fire TV hasn't been tested on a device yet.** It uses the Android TV build (same APK, same
+  remote handling and focus code), so it's expected to behave like Android TV, which was tested on
+  the emulator. Fire TV sticks are slower, so scrolling smoothness is worth a check on real
+  hardware.
+- **My List may not survive on Apple TV under storage pressure.** tvOS gives apps no guaranteed
+  local file storage; AsyncStorage keeps My List in the Caches folder there, which tvOS can clear
+  when the device runs low on space (normal restarts keep it). A fix would store it in
+  `NSUserDefaults` or iCloud key-value storage instead, which needs a native module.
+- **Screen reader support (VoiceOver / TalkBack) is unverified.** Tiles, buttons, rail titles and
+  loading states have accessibility roles and labels, but the app hasn't been tried with a screen
+  reader turned on. Before real users get it, do a pass on each platform (reading order, nothing
+  hidden being read, announcing My List changes and errors) and label the player controls.
 - **Dev menu app icon is blank on iOS/tvOS (development builds only).** App icons live in the
   root `assets/` folder, outside each app's project root. Expo's dev server builds the manifest
   icon URL as `/assets/../../assets/icon.png`, which collapses to the wrong path (Metro logs
