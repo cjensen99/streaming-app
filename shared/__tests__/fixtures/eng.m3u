@@ -1,0 +1,17 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="ABCNewsLive.us@SD" group-title="News",ABC News Live (720p)
+https://abc-news.example.com/live/sd/index.m3u8
+#EXTINF:-1 tvg-id="ABCNewsLive.us@HD" group-title="News",ABC News Live (1080p)
+https://abc-news.example.com/live/hd/index.m3u8
+#EXTINF:-1 tvg-id="2GB.au@SD" group-title="News",2GB (1080p)
+https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8
+#EXTINF:-1 tvg-id="BloombergTV.us@SD" group-title="Business;News",Bloomberg TV (720p)
+http://bloomberg.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="CBSNews.us@SD" group-title="News",CBS News (1080p) [Geo-blocked]
+https://cbs.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="CourtTV.us@SD" group-title="News",Court TV (720p) [Not 24/7]
+https://courttv.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="AlJazeeraEnglish.qa@SD" group-title="News",Al Jazeera English (1080p)
+https://aje.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="ESPNews.us@SD" group-title="Sports",ESPNews (720p)
+https://espnews.example.com/live/index.m3u8

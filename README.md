@@ -90,6 +90,9 @@ Run these from the repository root.
   the TV app (TV-first defaults) and **mobile** like the phone app (`Foo.mobile.tsx` first), so a
   phone-only override can't go untested. Run one project with
   `npm test -w shared -- --selectProjects mobile`.
+- API tests use trimmed copies of real iptv-org files (`shared/__tests__/fixtures/`) and a fake
+  `fetch`; no test touches the network. Test QueryClients use `gcTime: Infinity` and are cleared
+  after every test, so Jest exits cleanly.
 - **`config/`** (Node build-time code) uses Node's built-in test runner. The UIScene plugin is
   tested against copies of Expo's real SDK 57 and SDK 58 native templates
   (`config/__tests__/fixtures/`).
@@ -175,5 +178,15 @@ ESLint enforces these rules (`eslint.config.js`):
   that Metro (and later react-native-web) bundles; Node-only code (app config, config plugins,
   Metro config) lives in `@app/config`, linted and type-checked as Node. Unlike orkaTV-style path
   aliases, package imports need no Babel, Metro, webpack or `tsconfig` alias lists to keep in sync.
+- **Data: TanStack Query, fetched once per launch, no caching between launches.** Rails and
+  Detail metadata come from iptv-org's static files (no server-side filtering), downloaded and
+  filtered on the device when the app starts, and kept in memory for the session
+  (`staleTime`/`gcTime: Infinity`). Live streams need a connection anyway, so instead of caching
+  channels for offline use the app shows a full-screen "not connected" state; queries wait while
+  offline and start by themselves when a connection appears. Persisting the cache (TanStack's
+  persister) was built and then removed as unnecessary complexity for this app.
+- **Online = a network is connected** (NetInfo `isConnected`), ignoring `isInternetReachable`. The
+  OS reachability check can report "unreachable" on working networks (seen on the Android TV
+  emulator), which would pause every request; real failures show as errors with Retry instead.
 - **Fire TV** uses the Android TV build: leanback and touchscreen are declared as not required,
   so the same APK installs on Fire TV, Android TV and Google TV.

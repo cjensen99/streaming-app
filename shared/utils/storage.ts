@@ -28,8 +28,8 @@ function parseStoredJson<T>(text: string, isValid: IsValid<T>, key: string): T |
 }
 
 /**
- * Persistent key-value storage (AsyncStorage) for everything the app keeps between launches:
- * My List (Phase 5) and React Query's persisted cache (Phase 4). This is the only module that
+ * Persistent key-value storage (AsyncStorage) for what the app keeps between launches: My List
+ * (Phase 5). Channel data isn't stored; it's downloaded each launch. This is the only module that
  * imports AsyncStorage (enforced by ESLint).
  *
  * Reads never throw: a missing, unreadable or corrupted value comes back as `null`. Writes do

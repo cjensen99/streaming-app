@@ -7,3 +7,5 @@ apps/*/ios/
 package-lock.json
 *.md
 !README.md
+# Test fixtures are trimmed copies of real iptv-org data; keep them byte-for-byte.
+shared/__tests__/fixtures/

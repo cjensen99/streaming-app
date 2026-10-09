@@ -6,13 +6,17 @@ import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
  */
 
 /**
- * Online unless NetInfo knows otherwise. Both fields are `null` while NetInfo is still
- * checking; treating that as online avoids flashing an offline notice at launch.
+ * Online whenever a network is connected (`null` while NetInfo is still checking counts as
+ * online, so there's no offline flash at launch).
+ *
+ * `isInternetReachable` is deliberately ignored: it comes from the OS's own connectivity check,
+ * which wrongly reports "unreachable" on some working networks (e.g. the Android TV emulator,
+ * filtered networks, devices that use a different check). Treating that as offline would pause
+ * every request. If the internet really is unreachable, requests fail fast and the error UI
+ * explains it.
  */
-export function isOnlineState(
-  state: Pick<NetInfoState, 'isConnected' | 'isInternetReachable'>,
-): boolean {
-  return state.isConnected !== false && state.isInternetReachable !== false;
+export function isOnlineState(state: Pick<NetInfoState, 'isConnected'>): boolean {
+  return state.isConnected !== false;
 }
 
 /**

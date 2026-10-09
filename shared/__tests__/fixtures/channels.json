@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ABCNewsLive.us",
+    "name": "ABC News Live",
+    "alt_names": [],
+    "network": "ABC",
+    "owners": ["The Walt Disney Company"],
+    "country": "US",
+    "categories": ["news"],
+    "is_nsfw": false,
+    "launched": "2014-07-01",
+    "closed": null,
+    "replaced_by": null,
+    "website": "https://abcnews.go.com/Live"
+  },
+  {
+    "id": "BloombergTV.us",
+    "name": "Bloomberg TV",
+    "alt_names": [],
+    "network": null,
+    "owners": [],
+    "country": "US",
+    "categories": ["business", "news"],
+    "is_nsfw": false,
+    "launched": null,
+    "closed": null,
+    "replaced_by": null,
+    "website": null
+  },
+  {
+    "id": "2GB.au",
+    "name": "2GB",
+    "alt_names": [],
+    "network": null,
+    "owners": [],
+    "country": "AU",
+    "categories": ["news"],
+    "is_nsfw": false,
+    "launched": null,
+    "closed": null,
+    "replaced_by": null,
+    "website": "https://www.2gb.com/"
+  },
+  {
+    "name": "Entry Without An Id",
+    "country": "US",
+    "network": null,
+    "launched": null,
+    "website": null
+  },
+  {
+    "id": "ESPNews.us",
+    "name": "ESPNews",
+    "alt_names": [],
+    "network": "ESPN",
+    "owners": [],
+    "country": "US",
+    "categories": ["sports"],
+    "is_nsfw": false,
+    "launched": "1996-11-01",
+    "closed": null,
+    "replaced_by": null,
+    "website": null
+  }
+]

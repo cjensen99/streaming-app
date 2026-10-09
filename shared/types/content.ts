@@ -29,8 +29,7 @@ export interface ChannelSummary {
 export interface ChannelMetadata {
   /** Display name, e.g. `United States`. */
   country?: string;
-  /** Display names, e.g. `English`. */
-  languages: string[];
+  /** Parent network, e.g. `ABC`. */
   network?: string;
   /** ISO date, e.g. `1996-10-07`. */
   launched?: string;

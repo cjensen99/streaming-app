@@ -6,6 +6,7 @@ const base = {
   preset: 'jest-expo',
   testMatch: ['<rootDir>/__tests__/**/*.test.{ts,tsx}'],
   setupFiles: ['<rootDir>/__tests__/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setupAfterEnv.ts'],
   restoreMocks: true,
 };
 

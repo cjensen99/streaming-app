@@ -1,0 +1,24 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="ABCNewsLive.us@SD" tvg-logo="https://i.imgur.com/abcnewslive.png" group-title="News",ABC News Live (720p)
+https://abc-news.example.com/live/sd/index.m3u8
+#EXTINF:-1 tvg-id="ABCNewsLive.us@HD" tvg-logo="https://i.imgur.com/abcnewslive.png" group-title="News",ABC News Live (1080p)
+https://abc-news.example.com/live/hd/index.m3u8
+#EXTINF:-1 tvg-id="2GB.au@SD" tvg-logo="https://i.ibb.co/jwM8DFG/2GB-1.png" group-title="News",2GB (1080p)
+https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8
+#EXTINF:-1 tvg-id="BloombergTV.us@SD" tvg-logo="https://i.imgur.com/bloomberg.png" group-title="Business;News",bloomberg TV (720p)
+#EXTVLCOPT:http-referrer=https://www.bloomberg.com/
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Example)
+http://bloomberg.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="CBSNews.us@SD" tvg-logo="https://i.imgur.com/cbsnews.png" group-title="News",CBS News (1080p) [Geo-blocked]
+https://cbs.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="CourtTV.us@SD" tvg-logo="https://i.imgur.com/courttv.png" group-title="News",Court TV (720p) [Not 24/7]
+https://courttv.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="NoticiasTelemundo.us@SD" tvg-logo="https://i.imgur.com/telemundo.png" group-title="News",Noticias Telemundo (720p)
+https://telemundo.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="" tvg-logo="" group-title="News",Local News Stream
+https://local-news.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="NovynyLive.ua@SD" tvg-logo="https://i.imgur.com/novyny.png" group-title="News",Novyny.Live (1080p)
+rtmp://95.67.11.153/klive/stream
+#EXTINF:-1 tvg-id="Broken.us@SD" tvg-logo="" group-title="News",Broken Entry With No URL
+#EXTINF:-1 tvg-id="AlJazeeraEnglish.qa@SD" tvg-logo="https://i.imgur.com/aje.png" group-title="News",Al Jazeera English (1080p)
+https://aje.example.com/live/index.m3u8

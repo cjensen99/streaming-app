@@ -1,0 +1,5 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="ESPNews.us@SD" tvg-logo="https://i.imgur.com/espnews.png" group-title="Sports",ESPNews (720p)
+https://espnews.example.com/live/index.m3u8
+#EXTINF:-1 tvg-id="ABCNewsLive.us@SD" tvg-logo="https://i.imgur.com/abcnewslive.png" group-title="News;Sports",ABC News Live (720p)
+https://abc-news.example.com/live/sd/index.m3u8

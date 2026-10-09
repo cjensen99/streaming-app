@@ -4,15 +4,19 @@ import { isOnlineState, subscribeToOnlineStatus } from '../../utils/network';
 
 describe('isOnlineState', () => {
   it.each([
-    { isConnected: true, isInternetReachable: true, online: true },
+    { isConnected: true, online: true },
     // Still checking: treated as online so the app doesn't flash an offline notice.
-    { isConnected: null, isInternetReachable: null, online: true },
-    { isConnected: true, isInternetReachable: null, online: true },
-    // Connected to Wi-Fi, but the internet isn't reachable (e.g. a captive portal).
-    { isConnected: true, isInternetReachable: false, online: false },
-    { isConnected: false, isInternetReachable: null, online: false },
-  ])('isConnected=$isConnected, isInternetReachable=$isInternetReachable → $online', (row) => {
+    { isConnected: null, online: true },
+    { isConnected: false, online: false },
+  ])('isConnected=$isConnected → $online', (row) => {
     expect(isOnlineState(row)).toBe(row.online);
+  });
+
+  it('ignores isInternetReachable, which can be wrong on working networks', () => {
+    // Seen on the Android TV emulator: connected, internet works, but reported unreachable.
+    expect(isOnlineState({ isConnected: true, isInternetReachable: false } as NetInfoState)).toBe(
+      true,
+    );
   });
 });
 
