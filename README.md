@@ -185,6 +185,10 @@ ESLint enforces these rules (`eslint.config.js`):
   channels for offline use the app shows a full-screen "not connected" state; queries wait while
   offline and start by themselves when a connection appears. Persisting the cache (TanStack's
   persister) was built and then removed as unnecessary complexity for this app.
+- **My List saves only channel ids** (max 50), with Zustand `persist` through `utils/storage`
+  (AsyncStorage). Channels are looked up in each launch's rails, so one iptv-org no longer lists
+  shows as unavailable and can't be played, only removed. Saved data is validated on load:
+  corrupted or malformed data starts an empty list instead of crashing.
 - **Online = a network is connected** (NetInfo `isConnected`), ignoring `isInternetReachable`. The
   OS reachability check can report "unreachable" on working networks (seen on the Android TV
   emulator), which would pause every request; real failures show as errors with Retry instead.
