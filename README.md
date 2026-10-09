@@ -60,9 +60,10 @@ run generates that app's native folder (`ios/` or `android/`) with `expo prebuil
 | tvOS                 | `npm run tv:ios`         |
 | Android TV / Fire TV | `npm run tv:android`     |
 
-Pass a device after `--`, e.g. `npm run tv:ios -- --device "Apple TV 4K (3rd generation)"`.
-For Fire TV, connect with `adb connect <fire-tv-ip>` first; it then shows up as an Android
-device.
+Pass a device after `--`, e.g. `npm run tv:ios -- --device "Apple TV 4K (3rd generation)"` or
+`npm run mobile:android -- --device Medium_Phone_API_36.1`. With several devices or emulators
+connected, always pass one: otherwise the first one `adb` lists is used, which may be a TV
+emulator getting the phone app. `--device` on its own lists the devices to choose from.
 
 Build one iOS/tvOS app at a time: both apps compile `expo-modules-jsi` into the same hoisted
 `node_modules` folder, so two simultaneous `xcodebuild`s collide (`build.db: disk I/O error`).
@@ -71,6 +72,25 @@ Prebuild only needs running by hand after changing `app.config.ts`, a config plu
 dependency. Regenerate the native projects with `npm run mobile:prebuild` or
 `npm run tv:prebuild` (always `--clean`; switching between phone and TV builds without it breaks
 CocoaPods).
+
+### Physical devices
+
+The commands are the same; the device needs connecting first, and Apple devices need signing.
+These are development builds, so a device loads the app's JavaScript from Metro on your Mac: keep
+it on the same Wi-Fi network.
+
+- **iPhone:** connect by USB, turn on Developer Mode (Settings → Privacy & Security), then run
+  `npm run mobile:ios -- --device`. The first time, Expo asks for a signing team from your Apple
+  developer certificates (a free personal team works for your own devices). The phone may also
+  ask you to trust the developer (Settings → General → VPN & Device Management).
+- **Apple TV:** pair it in Xcode (Window → Devices and Simulators; on the Apple TV, Settings →
+  Remotes and Devices → Remote App and Devices), then run `npm run tv:ios -- --device` and pick a
+  signing team the same way.
+- **Android phone:** turn on Developer options and USB debugging, connect by USB, check that
+  `adb devices` lists it, then run `npm run mobile:android -- --device`.
+- **Android TV / Fire TV:** turn on Developer options and ADB debugging (Fire TV: Settings → My
+  Fire TV → Developer options), connect with `adb connect <tv-ip>:5555`, accept the prompt on the
+  TV, then run `npm run tv:android -- --device`.
 
 ### Build variants
 
