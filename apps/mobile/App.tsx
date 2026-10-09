@@ -5,7 +5,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
 
 // Menus are portrait-only (iOS also starts that way through the config plugin; this covers
-// Android). The player switches to landscape while it's open (Phase 11).
+// Android). The player switches to landscape while it's open.
 ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch((error: unknown) =>
   logger.warn('Could not lock portrait orientation', error),
 );

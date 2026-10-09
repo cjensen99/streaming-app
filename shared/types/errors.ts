@@ -1,5 +1,5 @@
 /**
- * The failures the app knows how to present. `api/client.ts` (Phase 4) converts every thrown
+ * The failures the app knows how to present. `api/client.ts` converts every thrown
  * error into one of these, so screens and hooks never handle raw exceptions.
  */
 export type AppError =

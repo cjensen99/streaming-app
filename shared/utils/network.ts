@@ -2,7 +2,7 @@ import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
 
 /**
  * Connectivity, wrapping NetInfo. This is the only module that imports NetInfo (enforced by
- * ESLint); React Query's online manager (Phase 4) and `useIsOnline` build on it.
+ * ESLint); React Query's online manager and `useIsOnline` build on it.
  */
 
 /**
